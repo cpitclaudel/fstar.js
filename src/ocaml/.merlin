@@ -1,0 +1,14 @@
+PKG batteries
+PKG zarith
+PKG js_of_ocaml
+PKG js_of_ocaml.ppx
+
+S fstar/src/basic/ml
+S fstar/src/extraction/ml
+S fstar/src/fstar/ml
+S fstar/src/ocaml-output
+S fstar/src/parser/ml
+S fstar/src/prettyprint/ml
+S fstar/ulib/ml
+
+B fstar/src/ocaml-output/_build/**
