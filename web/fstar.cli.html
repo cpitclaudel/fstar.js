@@ -1,11 +1,51 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <title></title>
-    <script src="../libs/BigInteger.js"></script>
-    <script src="args.js"></script>
-    <script src="../build/fs.js"></script>
-    <script src="../build/fstar.js"></script>
+    <meta charset="utf-8">
+    <title>F*.js demo</title>
+    <link rel="stylesheet" href="fstar.css">
   </head>
   <body>
+    <div id="main">
+      <h1>F*.js</h1>
+
+      <div id="editor">module Scratchpad
+
+let invalid = "A" + 1</div>
+
+      <p id="examples-box"><span id="examples"></span> (source: <a href="https://github.com/FStarLang/FStar">F*'s repo</a>)</p>
+
+      <hr />
+
+      <div id="control-panel">
+        <div class="row">
+          <span id="file-name-cell">
+            <input id="file-name" type="text" value="scratchpad.fst" />
+          </span>
+          <span id="command-line-args-cell">
+            <input id="command-line-args" type="text"
+                   value="--explicit_deps --lax --admit_smt_queries true --fstar_home /fstar" />
+          </span>
+          <span id="run-cell">
+            <input id="run" type="button" value="" disabled="disabled" />
+          </span>
+        </div>
+      </div>
+      <pre id="stdout"></pre>
+
+      <div id="footer">
+        Assembled by <a href="http://pit-claudel.fr/clement/">Clément Pit-Claudel</a> by compiling <!-- <a href="http://cvc4.cs.stanford.edu/web/">CVC4</a> v1.5-prerelease/209b088, <a href="https://gmplib.org/">GNU MP</a> v6.1.2 and <a href="http://antlr.org/">ANTLR's C runtime</a> v3.2 with <a href="http://kripken.github.io/emscripten-site/">Emscripten</a>, and -->F* 0.9.4.3/546237c with <a href="https://github.com/ocsigen/js_of_ocaml">js_of_ocaml</a>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js" integrity="sha256-xrr4HH5eSY+cFz4SH7ja/LaAi9qcEdjMpeMP49/iOLs=" crossorigin="anonymous"></script>
+    <script src="./fstar.ace.js"></script>
+    <script src="./fstar.cli.examples.js"></script>
+    <script src="./fstar.cli.protocol.js"></script>
+    <script src="./fstar.cli.client.js"></script>
+
+    <script>
+      FStarCLIClient(window, ace, FStarExamples, FStarCLIProtocol).init();
+    </script>
   </body>
 </html>
