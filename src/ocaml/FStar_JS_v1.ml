@@ -60,6 +60,10 @@ let _ =
                Z.to_int exitCode
            )
 
+       val callMainUnsafe =
+         (** This disables all exception catching (to get better Javascript backtraces) *)
+         Js.wrap_callback (fun () -> FStar_Main.go (); FStar_Main.cleanup ())
+
        (* val registerVirtualFS = *)
        (*   Js.wrap_callback (fun mount_point js_handler -> *)
        (*       register_virtual_fs *)
