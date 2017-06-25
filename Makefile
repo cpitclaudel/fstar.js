@@ -21,6 +21,8 @@ OCAMLBUILD=cd $(OCAML_ROOT) && \
 					-I fstar/src/prettyprint/ml \
 					-I fstar/src/ocaml-output
 
+default: opt
+
 fstar:
 	$(MAKE) -C $(FSTAR_ROOT)/src/ ocaml-fstar-ocaml
 
@@ -83,6 +85,9 @@ read: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
 
 serve:
 	python3 -m http.server
+
+clean-ocaml:
+	rm -rf $(OCAML_BUILD_DIR)
 
 clean:
 	rm -rf build
