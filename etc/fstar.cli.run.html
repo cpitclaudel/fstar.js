@@ -7,13 +7,6 @@
     <script src="../build/js/fstar.core.js"></script>
     <script src="../build/js/fstar.stdlib.js"></script>
     <script src="../lib/fstar.driver.js"></script>
-    <script>
-      FStar.settings.catchExceptions = false;
-      console.log(FStar.verifySync("test.fst",
-                                   "module Test\n\nopen List\nlet a = List.length [1]",
-                                   ["--lax",
-                                    "--admit_smt_queries", "true",
-                                    "--fstar_home", "/fstar"]));
-    </script>
+    <script src="./fstar.cli.run.js"></script>
   </body>
 </html>
