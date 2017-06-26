@@ -39,6 +39,7 @@ let invalid = "A" + 1</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js" integrity="sha256-xrr4HH5eSY+cFz4SH7ja/LaAi9qcEdjMpeMP49/iOLs=" crossorigin="anonymous"></script>
+    <script src="../lib/fstar.global-object.js"></script>
     <script src="./fstar.ace.js"></script>
     <script src="./fstar.cli.examples.js"></script>
     <script src="./fstar.cli.protocol.js"></script>
@@ -46,7 +47,7 @@ let invalid = "A" + 1</div>
     <script src="./fstar.client.utils.js"></script>
 
     <script>
-      FStarCLIClient(window, ace, FStarExamples, FStarCLIProtocol, FStarClientUtils).init();
+      FStar.CLI.Client.run();
     </script>
   </body>
 </html>
