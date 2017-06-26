@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>F*.js IDE demo</title>
+    <link rel="stylesheet" href="fstar.css">
+  </head>
+  <body>
+    <div id="main">
+      <h1>F*.js</h1>
+
+<h1>Case study: simply-typed lambda-calculus<a class="headerlink" href="#case-study-simply-typed-lambda-calculus" title="Permalink to this headline">¶</a></h1>
+<div class="code fstar literal-block">
+module STLC
+</div>
+<div class="admonition-fixme admonition">
+<p class="first admonition-title">FIXME (Cătălin)</p>
+<p class="last">Any way I could have imported the existing code here without duplicating
+it? Without a way to do this maintaining this document and keeping it
+consistent will be a nightmare.</p>
+</div>
+<p>We now look at a larger case study: proving the soundness of a
+type-checker for the simply-typed <span class="math">\(\lambda\)</span>-calculus (STLC). If
+you&#8217;re not familiar with STLC, you can have a look at the <a class="reference external" href="http://www.cis.upenn.edu/~bcpierce/sf/current/Stlc.html">Software
+Foundations book</a> for a gentle introduction given by the textual
+explanations (you can ignore the Coq parts there). The formalization and
+proof here closely follows the one in <a class="reference external" href="http://www.cis.upenn.edu/~bcpierce/sf/current/StlcProp.html">Software Foundations</a>. Our
+proofs are, however, shorter and much more readable than Coq proofs.</p>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<p>We represent STLC types by the <a href="#id1"><span class="problematic" id="id2">|fstar|</span></a> inductive datatype <code class="docutils literal"><span class="pre">ty</span></code>.</p>
+<div class="code fstar literal-block">
+type ty =
+  | TBool  : ty
+  | TArrow : tin:ty -&gt; tout:ty -&gt; ty
+
+type var = int
+</div>
+<p>We consider Booleans as the only base type (<code class="docutils literal"><span class="pre">TBool</span></code>). Function types
+are represented by the <code class="docutils literal"><span class="pre">TArrow</span></code> constructor taking two type arguments.
+For instance we write <code class="docutils literal"><span class="pre">TArrow</span> <span class="pre">TBool</span> <span class="pre">TBool</span></code> for the type of functions
+taking a Boolean argument and returning a Boolean result. This would be
+written as <code class="docutils literal"><span class="pre">bool</span> <span class="pre">-&gt;</span> <span class="pre">bool</span></code> in <a href="#id3"><span class="problematic" id="id4">|fstar|</span></a> syntax, and
+<span class="math">\(\mathsf{bool} \to \mathsf{bool}\)</span> in paper notation.</p>
+<p>We represent the expressions of STLC by the datatype <code class="docutils literal"><span class="pre">exp</span></code>.</p>
+<div class="code fstar literal-block">
+type exp =
+  | EVar   : v:var -&gt; exp
+  | EApp   : fn:exp -&gt; arg:exp -&gt; exp
+  | EAbs   : v:var -&gt; vty:ty -&gt; body:exp -&gt; exp
+  | ETrue  : exp
+  | EFalse : exp
+  | EIf    : test:exp -&gt; btrue:exp -&gt; bfalse:exp -&gt; exp
+</div>
+<p>Variables are represented as integer &#8220;names&#8221; decorated by the
+constructor <code class="docutils literal"><span class="pre">EVar</span></code>. Variables are &#8220;bound&#8221; by lambda abstractions
+(<code class="docutils literal"><span class="pre">EAbs</span></code>). For instance the identity function on Booleans is written
+<code class="docutils literal"><span class="pre">EAbs</span> <span class="pre">0</span> <span class="pre">TBool</span> <span class="pre">(EVar</span> <span class="pre">0)</span></code>. In paper notation one would write this
+function as <span class="math">\((\lambda x:\mathsf{bool}.~x)\)</span>. The type annotation on
+the argument (<code class="docutils literal"><span class="pre">TBool</span></code>) allows for very simple type-checking. We are
+not considering type inference here, to keep things simple. The
+expression that applies the identity function to the <code class="docutils literal"><span class="pre">ETrue</span></code> constant
+is written</p>
+<div class="code fstar literal-block">
+let stlc_app_id_to_true = EApp (EAbs 0 TBool (EVar 0)) ETrue
+</div>
+<p>(in paper notation <span class="math">\((\lambda x:\mathsf{bool}.~x)~\mathsf{true}\)</span>).</p>
+<p>The language also has a conditional construct (if-then-else). For
+instance, the Boolean &#8220;not&#8221; function can be written as</p>
+<div class="code fstar literal-block">
+let stlc_not = EAbs 0 TBool (EIf (EVar 0) EFalse ETrue)
+</div>
+<p>(in paper notation
+<span class="math">\(\lambda x:\mathsf{bool}.~\mathsf{if }~x~\mathsf{ then~false~else~true}\)</span>).</p>
+</div>
+<div class="section" id="operational-semantics">
+<h2>Operational semantics<a class="headerlink" href="#operational-semantics" title="Permalink to this headline">¶</a></h2>
+<p>We define a standard small-step call-by-value interpreter for STLC. The
+final result of successfully evaluating an expression is called a
+<em>value</em>. We postulate that functions and the Boolean constants are
+values by defining <code class="docutils literal"><span class="pre">is_value</span></code>, a boolean predicate on expressions (a
+total function):</p>
+<div class="code fstar literal-block">
+val is_value : exp -&gt; Tot bool
+let is_value e =
+  match e with
+  | EAbs _ _ _
+  | ETrue
+  | EFalse     -&gt; true
+  | _          -&gt; false
+</div>
+<p>The <code class="docutils literal"><span class="pre">EAbs</span></code>, <code class="docutils literal"><span class="pre">ETrue</span></code>, and <code class="docutils literal"><span class="pre">EFalse</span></code> cases share the same
+right-hand-side (<code class="docutils literal"><span class="pre">true</span></code>), which is a way to prevent duplication in
+definitions.</p>
+<p>In order to give a semantics to function applications we define a
+function <code class="docutils literal"><span class="pre">subst</span> <span class="pre">x</span> <span class="pre">e</span> <span class="pre">e'</span></code> that substitutes <code class="docutils literal"><span class="pre">x</span></code> with <code class="docutils literal"><span class="pre">e</span></code> in <code class="docutils literal"><span class="pre">e'</span></code>:</p>
+<div class="code fstar literal-block">
+val subst : int -&gt; exp -&gt; exp -&gt; Tot exp
+let rec subst x e e' =
+  match e' with
+  | EVar x' -&gt; if x = x' then e else e'
+  | EAbs x' t e1 -&gt;
+      EAbs x' t (if x = x' then e1 else (subst x e e1))
+  | EApp e1 e2 -&gt; EApp (subst x e e1) (subst x e e2)
+  | ETrue -&gt; ETrue
+  | EFalse -&gt; EFalse
+  | EIf e1 e2 e3 -&gt; EIf (subst x e e1) (subst x e e2) (subst x e e3)
+</div>
+
+      <div id="footer">
+        Assembled by <a href="http://pit-claudel.fr/clement/">Clément Pit-Claudel</a> by compiling <!-- <a href="http://cvc4.cs.stanford.edu/web/">CVC4</a> v1.5-prerelease/209b088, <a href="https://gmplib.org/">GNU MP</a> v6.1.2 and <a href="http://antlr.org/">ANTLR's C runtime</a> v3.2 with <a href="http://kripken.github.io/emscripten-site/">Emscripten</a>, and -->F* 0.9.4.3/546237c with <a href="https://github.com/ocsigen/js_of_ocaml">js_of_ocaml</a>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js" integrity="sha256-xrr4HH5eSY+cFz4SH7ja/LaAi9qcEdjMpeMP49/iOLs=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+    <script src="../lib/fstar.global-object.js"></script>
+    <script src="./fstar.ace.js"></script>
+    <script src="./fstar.client.utils.js"></script>
+    <script src="./fstar.ide.protocol.js"></script>
+    <script src="./fstar.ide.client.js"></script>
+    <script src="./fstar.ide.reSTclient.js"></script>
+
+    <script>
+      FStar.IDE.LiterateClient.run();
+    </script>
+  </body>
+</html>
