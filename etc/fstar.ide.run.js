@@ -1,8 +1,9 @@
-/* global require global FStar:true JSOO_FStar:true JSOO_FStar_Stdlib:true */
+/* global require global FStar */
 
 if (typeof(require) !== "undefined") {
-    JSOO_FStar = require("../build/js/fstar.core.js"); /* exported JSOO_FStar */
-    JSOO_FStar_Stdlib = require("../build/js/fstar.stdlib.js"); /* exported JSOO_FStar_Stdlib */
+    global.JSOO_FStar = require("../build/js/fstar.core.js");
+    global.JSOO_FStar_Stdlib = require("../build/js/fstar.stdlib.js");
+    global.underscore = require("../vendor/underscore-min.js");
     require("../lib/fstar.global-object.js");
     require("../lib/fstar.driver.js");
     require("../lib/fstar.ide.utils.js");
