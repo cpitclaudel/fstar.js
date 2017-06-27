@@ -1,0 +1,115 @@
+html {
+    font-family: "Ubuntu", sans-serif;
+    padding: 1rem;
+}
+
+body {
+    border: 1px solid #BBB;
+    margin: auto;
+    max-width: 60em;
+}
+
+h1 {
+    font-weight: normal;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+#main {
+    background: #F0F0F0;
+    padding: 1rem;
+}
+
+#footer {
+    font-size: 0.7rem;
+    font-style: italic;
+    margin-top: 1rem;
+    text-align: right;
+}
+
+.ace_hidden-cursors .ace_cursor {
+    opacity: 0 !important;
+}
+
+.fstar-control-panel {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    min-height: 1rem;
+    text-align: right;
+    width: 100%;
+}
+
+.fstar-snippet-submit {
+    color: blue;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+
+.fstar-snippet-pending .ace_editor {
+    background-color: #5C3566 !important;
+}
+
+.fstar-snippet-busy .ace_editor {
+    background-color: mediumorchid !important;
+}
+
+.fstar-snippet-done .ace_editor {
+    background-color: darkslateblue !important;
+}
+
+/* .fstar-snippet-pending .fstar-snippet-status { */
+/*     color: #5C3566; */
+/* } */
+
+/* .fstar-snippet-busy .fstar-snippet-status { */
+/*     color: mediumorchid; */
+/* } */
+
+/* .fstar-snippet-done .fstar-snippet-status { */
+/*     color: darkslateblue; */
+/* } */
+
+.fstar-snippet-pending .fstar-snippet-submit,
+.fstar-snippet-busy .fstar-snippet-submit,
+.fstar-snippet-done .fstar-snippet-submit {
+    visibility: hidden;
+}
+
+.fstar-error-panel {
+    border: 1px solid grey;
+    display: none;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    padding: 0.25rem;
+    text-align: left;
+}
+
+.fstar-error {
+    margin: 0.15rem 0;
+}
+
+.fstar-error-level {
+    font-weight: bold;
+    margin-right: 0.5em;
+    text-transform: capitalize;
+}
+
+.fstar-error-error > .fstar-error-level {
+    color: red;
+}
+
+.fstar-error-warning > .fstar-error-level {
+    color: orange;
+}
+
+.fstar-error-info > .fstar-error-level {
+    color: green;
+}
+
+.fstar-error-range {
+    display: block;
+    font-family: "Ubuntu Mono", monospace;
+    font-size: 0.75rem;
+    margin-left: 1rem;
+}
