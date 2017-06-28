@@ -68,18 +68,6 @@ h1 {
     background-color: darkslateblue !important;
 }
 
-/* .fstar-snippet-pending .fstar-snippet-status { */
-/*     color: #5C3566; */
-/* } */
-
-/* .fstar-snippet-busy .fstar-snippet-status { */
-/*     color: mediumorchid; */
-/* } */
-
-/* .fstar-snippet-done .fstar-snippet-status { */
-/*     color: darkslateblue; */
-/* } */
-
 .fstar-snippet-pending .fstar-snippet-submit,
 .fstar-snippet-busy .fstar-snippet-submit,
 .fstar-snippet-done .fstar-snippet-submit {
@@ -95,7 +83,7 @@ h1 {
     text-align: left;
 }
 
-.fstar-error {
+.fstar-error, .fstar-warning, .fstar-info {
     margin: 0.15rem 0;
 }
 
@@ -105,21 +93,54 @@ h1 {
     text-transform: capitalize;
 }
 
-.fstar-error-error > .fstar-error-level {
-    color: red;
-}
-
-.fstar-error-warning > .fstar-error-level {
-    color: orange;
-}
-
-.fstar-error-info > .fstar-error-level {
-    color: green;
-}
-
 .fstar-error-range {
     display: block;
     font-family: "Ubuntu Mono", monospace;
     font-size: 0.75rem;
     margin-left: 1rem;
+}
+
+.fstar-error-marker, .fstar-warning-marker, .fstar-info-marker {
+    text-decoration-line: underline;
+    /* text-decoration-style: wavy; Broken in Chrome */
+}
+
+.fstar-error-marker {
+    text-decoration-color: red;
+}
+
+.fstar-highlighted-marker {
+    text-decoration-style: double;
+}
+
+.fstar-error-marker.fstar-highlighted-marker {
+    text-shadow: red 0 0 0.2em;
+}
+
+.fstar-error > .fstar-error-level {
+    color: red;
+}
+
+.fstar-warning-marker {
+    text-decoration-color: orange;
+}
+
+.fstar-warning-marker.fstar-highlighted-marker {
+    text-shadow: orange 0 0 0.2em;
+}
+
+.fstar-warning > .fstar-error-level {
+    color: orange;
+}
+
+.fstar-info-marker {
+    text-decoration-color: green;
+}
+
+.fstar-info-marker.fstar-highlighted-marker {
+    text-shadow: green 0 0 0.2em;
+}
+
+.fstar-info > .fstar-error-level {
+    color: green;
 }
