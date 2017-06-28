@@ -20,8 +20,8 @@ h1 {
     padding: 1rem;
 }
 
-#editor {
-    height: 20rem;
+.CodeMirror {
+    height: 20rem !important;
     width: 100%;
 }
 

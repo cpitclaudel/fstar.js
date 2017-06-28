@@ -27,8 +27,19 @@ h1 {
     text-align: right;
 }
 
-.ace_hidden-cursors .ace_cursor {
-    opacity: 0 !important;
+.fstar-snippet > .CodeMirror {
+    font-family: "Ubuntu Mono", monospace;
+    font-size: 1rem;
+    height: auto;
+    width: 100%;
+}
+
+.fstar-snippet .CodeMirror-linenumber {
+    padding: 0 5px 0 3px !important;
+}
+
+.fstar-snippet .CodeMirror-gutters {
+    border-right: 1px solid darkgray !important;
 }
 
 .fstar-control-panel {
@@ -45,16 +56,15 @@ h1 {
     text-decoration: underline;
 }
 
-
-.fstar-snippet-pending .ace_editor {
+.fstar-snippet-pending > .CodeMirror {
     background-color: #5C3566 !important;
 }
 
-.fstar-snippet-busy .ace_editor {
+.fstar-snippet-busy > .CodeMirror {
     background-color: mediumorchid !important;
 }
 
-.fstar-snippet-done .ace_editor {
+.fstar-snippet-done > .CodeMirror {
     background-color: darkslateblue !important;
 }
 
