@@ -1,45 +1,7 @@
-html {
-    font-family: "Ubuntu", sans-serif;
-    padding: 1rem;
-}
-
-body {
-    border: 1px solid #888a85;
-    margin: auto;
-    max-width: 60em;
-}
-
-h1 {
-    font-weight: normal;
-    margin-bottom: 0.5rem;
-    margin-top: 0;
-}
-
-#main {
-    background: #eeeeec;
-    padding: 1rem;
-}
-
-#footer {
-    font-size: 0.7rem;
-    font-style: italic;
-    margin-top: 1rem;
-    text-align: right;
-}
-
 .fstar-snippet > .CodeMirror {
     font-family: "Ubuntu Mono", monospace;
     font-size: 1rem;
     height: auto;
-    width: 100%;
-}
-
-.fstar-snippet .CodeMirror-linenumber {
-    padding: 0 5px 0 3px !important;
-}
-
-.fstar-snippet .CodeMirror-gutters {
-    border-right: 1px solid #888a85 !important;
 }
 
 .fstar-control-panel {
@@ -60,15 +22,36 @@ h1 {
     text-decoration: underline;
 }
 
-.fstar-snippet-pending > .CodeMirror, .fstar-progress-bar-pending {
+.fstar-snippet-pending .CodeMirror-gutters,
+.fstar-snippet-pending > .CodeMirror,
+.fstar-progress-bar-pending {
+    background-color: #AD7FA8 !important;
+}
+
+.fstar-snippet-busy .CodeMirror-gutters,
+.fstar-snippet-busy > .CodeMirror,
+.fstar-progress-bar-busy {
+    background-color: mistyrose !important;
+}
+
+.fstar-snippet-done .CodeMirror-gutters,
+.fstar-snippet-done > .CodeMirror,
+.fstar-progress-bar-done {
+    background-color: #EAF8FF !important;
+}
+
+.fstar-dark-theme.fstar-snippet-pending > .CodeMirror,
+.fstar-dark-theme.fstar-progress-bar-pending {
     background-color: #5C3566 !important;
 }
 
-.fstar-snippet-busy > .CodeMirror, .fstar-progress-bar-busy {
+.fstar-dark-theme.fstar-snippet-busy > .CodeMirror,
+.fstar-dark-theme.fstar-progress-bar-busy {
     background-color: mediumorchid !important;
 }
 
-.fstar-snippet-done > .CodeMirror, .fstar-progress-bar-done {
+.fstar-dark-theme.fstar-snippet-done > .CodeMirror,
+.fstar-dark-theme.fstar-progress-bar-done {
     background-color: darkslateblue !important;
 }
 

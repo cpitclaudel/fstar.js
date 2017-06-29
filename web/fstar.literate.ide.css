@@ -1,0 +1,42 @@
+html {
+    font-family: "Ubuntu", sans-serif;
+    padding: 1rem;
+}
+
+body {
+    border: 1px solid #888a85;
+    margin: auto;
+    max-width: 60em;
+}
+
+h1 {
+    font-weight: normal;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+#main {
+    background: #eeeeec;
+    padding: 1rem;
+}
+
+#footer {
+    font-size: 0.7rem;
+    font-style: italic;
+    margin-top: 1rem;
+    text-align: right;
+}
+
+.fstar-snippet > .CodeMirror {
+    font-family: "Ubuntu Mono", monospace;
+    width: 100%;
+}
+
+
+.fstar-snippet .CodeMirror-linenumber {
+    padding: 0 5px 0 3px !important;
+}
+
+.fstar-snippet .CodeMirror-gutters {
+    border-right: 1px solid #888a85 !important;
+}
