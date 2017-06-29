@@ -4,7 +4,7 @@ html {
 }
 
 body {
-    border: 1px solid #BBB;
+    border: 1px solid #888a85;
     margin: auto;
     max-width: 60em;
 }
@@ -16,7 +16,7 @@ h1 {
 }
 
 #main {
-    background: #F0F0F0;
+    background: #eeeeec;
     padding: 1rem;
 }
 
@@ -39,15 +39,19 @@ h1 {
 }
 
 .fstar-snippet .CodeMirror-gutters {
-    border-right: 1px solid darkgray !important;
+    border-right: 1px solid #888a85 !important;
 }
 
 .fstar-control-panel {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     margin-top: 0.25rem;
     min-height: 1rem;
     text-align: right;
     width: 100%;
+}
+
+.fstar-snippet-complaint {
+    float: left;
 }
 
 .fstar-snippet-submit {
@@ -56,15 +60,15 @@ h1 {
     text-decoration: underline;
 }
 
-.fstar-snippet-pending > .CodeMirror {
+.fstar-snippet-pending > .CodeMirror, .fstar-progress-bar-pending {
     background-color: #5C3566 !important;
 }
 
-.fstar-snippet-busy > .CodeMirror {
+.fstar-snippet-busy > .CodeMirror, .fstar-progress-bar-busy {
     background-color: mediumorchid !important;
 }
 
-.fstar-snippet-done > .CodeMirror {
+.fstar-snippet-done > .CodeMirror, .fstar-progress-bar-done {
     background-color: darkslateblue !important;
 }
 
@@ -96,8 +100,12 @@ h1 {
 .fstar-error-range {
     display: block;
     font-family: "Ubuntu Mono", monospace;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     margin-left: 1rem;
+}
+
+.fstar-highlighted-marker {
+    text-decoration-style: double;
 }
 
 .fstar-error-marker, .fstar-warning-marker, .fstar-info-marker {
@@ -105,42 +113,60 @@ h1 {
     /* text-decoration-style: wavy; Broken in Chrome */
 }
 
-.fstar-error-marker {
-    text-decoration-color: red;
+
+.fstar-progress-bar {
+    background: #2e3436;
+    border-top: 1px solid #555753;
+    box-sizing: content-box;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+    height: 1rem;
+    left: 0;
+    position: fixed;
+    width: calc(100% + 0.5px);
+    z-index: 1000;
 }
 
-.fstar-highlighted-marker {
-    text-decoration-style: double;
+.fstar-progress-bar-element {
+    flex-grow: 1;
+    box-sizing: border-box;
+    border-right: 0.5px solid #555753;
+}
+
+
+.fstar-error-marker {
+    text-decoration-color: #cc0000;
 }
 
 .fstar-error-marker.fstar-highlighted-marker {
-    text-shadow: red 0 0 0.2em;
+    text-shadow: #cc0000 0 0 0.2em;
 }
 
 .fstar-error > .fstar-error-level {
-    color: red;
+    color: #cc0000;
 }
 
 .fstar-warning-marker {
-    text-decoration-color: orange;
+    text-decoration-color: #f57900;
 }
 
 .fstar-warning-marker.fstar-highlighted-marker {
-    text-shadow: orange 0 0 0.2em;
+    text-shadow: #f57900 0 0 0.2em;
 }
 
 .fstar-warning > .fstar-error-level {
-    color: orange;
+    color: #f57900;
 }
 
 .fstar-info-marker {
-    text-decoration-color: green;
+    text-decoration-color: #73d216;
 }
 
 .fstar-info-marker.fstar-highlighted-marker {
-    text-shadow: green 0 0 0.2em;
+    text-shadow: #73d216 0 0 0.2em;
 }
 
 .fstar-info > .fstar-error-level {
-    color: green;
+    color: #73d216;
 }
