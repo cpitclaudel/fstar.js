@@ -84,6 +84,8 @@ read: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	./etc/append-tail.sh $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
 
 serve:
+	cp $(JS_BUILD_DIR)/fstar.*.js lib/
+	ln -s "$(realpath lib)" "web/fstar.js" || true
 	python3 -m http.server
 
 clean-ocaml:

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>F*.js IDE demo</title>
-    <link rel="stylesheet" href="fstar.ide.css">
+    <link rel="stylesheet" href="./fstar.js/fstar.ide.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.2/codemirror.min.css" integrity="sha256-jZCpvbpc2qMTgaR9eZxX0qxtyrGW+7SLgkQN+ngQKQs=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.2/theme/monokai.min.css" integrity="sha256-6ov3WWd9ybfZPeJBlXBgQuD/aLhTRCEp5kBhqD9ke0o=" crossorigin="anonymous" />
   </head>
@@ -120,13 +120,13 @@ let rec subst x e e' =
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script>
 
-    <script src="../lib/fstar.global-object.js"></script>
-    <script src="../lib/fstar.ide.utils.js"></script>
-    <script src="./fstar.cm.js"></script>
-    <script src="./fstar.client.utils.js"></script>
-    <script src="./fstar.ide.protocol.js"></script>
-    <script src="./fstar.ide.client.js"></script>
-    <script src="./fstar.ide.reSTclient.js"></script>
+    <script src="./fstar.js/fstar.global-object.js"></script>
+    <script src="./fstar.js/fstar.ide.utils.js"></script>
+    <script src="./fstar.js/fstar.cm.js"></script>
+    <script src="./fstar.js/fstar.client.utils.js"></script>
+    <script src="./fstar.js/fstar.ide.protocol.js"></script>
+    <script src="./fstar.js/fstar.ide.client.js"></script>
+    <script src="./fstar.js/fstar.ide.literate.client.js"></script>
 
     <script>
       FStar.IDE.LiterateClient.run("stlc.fst");
