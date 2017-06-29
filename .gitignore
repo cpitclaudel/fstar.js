@@ -1,5 +1,10 @@
 attic.*
+/todo.org
+
 /build/
 /scratch/
 /src/ocaml/tmp/
-/todo.org
+
+/web/fstar.js
+/lib/fstar.stdlib.js
+/lib/fstar.core.js
