@@ -1,3 +1,6 @@
+/* global bigInt caml_to_js_string caml_js_to_string caml_failwith */
+/* eslint-disable no-unused-vars */
+
 //Provides: ml_z_init const
 function ml_z_init() {}
 
