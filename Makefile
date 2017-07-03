@@ -85,7 +85,7 @@ read: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
 
 serve:
 	cp $(JS_BUILD_DIR)/fstar.*.js lib/
-	ln -s "$(realpath lib)" "web/fstar.js" || true
+	if [ ! -d "web/fstar.js" ]; then ln -s "$(realpath lib)" "web/fstar.js"; fi
 	python3 -m http.server
 
 clean-ocaml:
