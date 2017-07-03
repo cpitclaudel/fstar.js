@@ -1,12 +1,27 @@
+html {
+    font-size: initial !important;
+}
+
+.fstar-snippet {
+    color: inherit;
+    border-width: 0;
+    padding: 0;
+    margin: 1rem 0;
+}
+
 .fstar-snippet > .CodeMirror {
-    font-family: "Ubuntu Mono", monospace;
-    font-size: 1rem;
+    border-bottom: 1px solid #2e3436;
+    border-top: 1px solid #2e3436;
     height: auto;
+}
+
+.fstar-snippet > .CodeMirror,
+.fstar-error, .fstar-warning, .fstar-info {
+    font-family: "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
 }
 
 .fstar-control-panel {
     font-size: 0.7rem;
-    margin-top: 0.25rem;
     min-height: 1rem;
     text-align: right;
     width: 100%;
@@ -22,19 +37,19 @@
     text-decoration: underline;
 }
 
-.fstar-snippet-pending .CodeMirror-gutters,
+/* .fstar-snippet-pending .CodeMirror-gutters, */
 .fstar-snippet-pending > .CodeMirror,
 .fstar-progress-bar-pending {
     background-color: #AD7FA8 !important;
 }
 
-.fstar-snippet-busy .CodeMirror-gutters,
+/* .fstar-snippet-busy .CodeMirror-gutters, */
 .fstar-snippet-busy > .CodeMirror,
 .fstar-progress-bar-busy {
     background-color: mistyrose !important;
 }
 
-.fstar-snippet-done .CodeMirror-gutters,
+/* .fstar-snippet-done .CodeMirror-gutters, */
 .fstar-snippet-done > .CodeMirror,
 .fstar-progress-bar-done {
     background-color: #EAF8FF !important;
@@ -58,20 +73,21 @@
 .fstar-snippet-pending .fstar-snippet-submit,
 .fstar-snippet-busy .fstar-snippet-submit,
 .fstar-snippet-done .fstar-snippet-submit {
-    visibility: hidden;
+    display: none;
 }
 
 .fstar-error-panel {
     border: 1px solid grey;
     display: none;
     font-size: 0.9rem;
-    margin-bottom: 0.25rem;
+    margin: 0.15rem 0;
     padding: 0.25rem;
     text-align: left;
 }
 
 .fstar-error, .fstar-warning, .fstar-info {
-    margin: 0.15rem 0;
+    display: block;
+    margin: 0.15rem 0 !important;
 }
 
 .fstar-error-level {
@@ -82,9 +98,13 @@
 
 .fstar-error-range {
     display: block;
-    font-family: "Ubuntu Mono", monospace;
     font-size: 0.7rem;
     margin-left: 1rem;
+}
+
+.fstar-error-range:hover {
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 .fstar-highlighted-marker {
@@ -112,11 +132,17 @@
 }
 
 .fstar-progress-bar-element {
-    flex-grow: 1;
     box-sizing: border-box;
     border-right: 0.5px solid #555753;
+    flex-grow: 1; /* Dynamically adjusted */
 }
 
+.fstar-active-progress-bar-element {
+    /* background: repeating-linear-gradient( */
+    /*     -45deg, transparent, transparent 3px, #eeeeec 4.5px, transparent 6px */
+    /* ); */
+    border-bottom: 0.2rem solid #3465a4;
+}
 
 .fstar-error-marker {
     text-decoration-color: #cc0000;
