@@ -8,3 +8,5 @@ attic.*
 /web/fstar.js
 /lib/fstar.stdlib.js
 /lib/fstar.core.js
+/lib/z3-*
+/etc/z3-*
