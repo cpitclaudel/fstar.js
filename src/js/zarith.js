@@ -72,7 +72,7 @@ function ml_z_div_rem(z1, z2) {
 //Provides: ml_z_succ const
 //Requires: bigInt
 function ml_z_succ(z1) {
-    return bigInt(z1).next()
+    return bigInt(z1).next();
 }
 
 // external pred: t -> t = pred@ASM
@@ -221,20 +221,46 @@ function ml_z_format(fmt, z1) {
     }
 }
 
+//Provides: ml_z_of_js_string_base const
+//Requires: bigInt, caml_to_js_string, caml_failwith
+function ml_z_of_js_string_base(base, s) {
+    if (base == 0) { // https://github.com/ocaml/Zarith/blob/b8dbaf48a7927061df699ad7ce642bb4f1fe5308/caml_z.c#L600
+        base = 10;
+
+        if (s[0] == '0') {
+            if (s.length == 1) {
+                return bigInt(0);
+            } else {
+                var bc = s[1];
+                if (bc == 'o' || bc == 'O') {
+                    base = 8;
+                } else if (bc == 'x' || bc == 'X') {
+                    base = 16;
+                } else if (bc == 'b' || bc == 'B') {
+                    base = 2;
+                } else {
+                    caml_failwith("Z.of_substring_base: invalid digit");
+                }
+
+                s = s.substring(2);
+            }
+        }
+    }
+    return bigInt(s, base);
+}
+
 // external of_string_base: int -> string -> t = "ml_z_of_string_base"
 //Provides: ml_z_of_string_base const
-//Requires: bigInt
-//Requires: caml_to_js_string
+//Requires: caml_to_js_string, ml_z_of_js_string_base
 function ml_z_of_string_base(base, s) {
-    return bigInt(caml_to_js_string(s), base);
+    return ml_z_of_js_string_base(base, caml_to_js_string(s));
 }
 
 // external of_substring_base: int -> string -> pos:int -> len:int -> t = "ml_z_of_substring_base"
 //Provides: ml_z_of_substring_base const
-//Requires: bigInt
-//Requires: caml_to_js_string
+//Requires: caml_to_js_string, ml_z_of_js_string_base
 function ml_z_of_substring_base(base, s, pos, len) {
-    return bigInt(caml_to_js_string(s).substring(pos, pos + len), base);
+    return ml_z_of_js_string_base(base, caml_to_js_string(s).substring(pos, pos + len));
 }
 
 // external compare: t -> t -> int = "ml_z_compare" @NOALLOC
