@@ -9,6 +9,22 @@
     <script src="../vendor/underscore-min.js"></script>
     <script src="../lib/fstar.global-object.js"></script>
     <script src="../lib/fstar.driver.js"></script>
-    <script src="./fstar.cli.run.js"></script>
+    <script src="./z3-wasm.core.js"></script>
+    <script src="../lib/fstar.smtdriver.js"></script>
+    <script>
+      fetch('../lib/z3-wasm.core.wasm')
+        .then(response => response.arrayBuffer())
+        .then(buffer => {
+           FStar.SMTDriver.OPTIONS = { wasmBinary: buffer };
+           _.each(["./fstar.cli.run.js"], function(path) {
+               var script = document.createElement('script');
+               script.src = path;
+               script.onload = function() {
+                   console.log("Done loading", path);
+               }
+               document.body.appendChild(script);
+           });
+        });
+    </script>
   </body>
 </html>

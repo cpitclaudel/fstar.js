@@ -24,15 +24,23 @@ let repl_eval_str query =
    | _ -> ());
   js_str
 
-(** Register ‘handler’ as a virtual file system mounted at ‘mount_point’.
-   ‘handler’ is called every time a file in ‘mountpoint’ is accessed (unless
-   that file already exists in JSOO's virtual file system), and should return
-   the file contents, or None. *)
-(* let register_virtual_fs mount_point (handler: string -> string option) = *)
-(*   Sys_js.mount *)
-(*     mount_point *)
-(*     (fun ~prefix ~path -> *)
-(*       handler (Filename.concat prefix path)) *)
+let wrap_simple_solver (solver: string -> string) =
+  let needs_restart = ref false in
+
+  let ask input =
+    if !needs_restart then
+      failwith "This solver does not support incremental queries"
+    else
+      let response = solver input in
+      needs_restart := true;
+      response in
+
+  let refresh_restart () =
+    needs_restart := false in
+
+  { FStar_SMTEncoding_Z3.ask = ask;
+    FStar_SMTEncoding_Z3.refresh = refresh_restart;
+    FStar_SMTEncoding_Z3.restart = refresh_restart }
 
 let _ =
   Js.export_all
@@ -50,6 +58,13 @@ let _ =
                Sys_js.update_file ~name ~content
              else
                Sys_js.register_file ~name ~content)
+
+       val setSMTSolver =
+         Js.wrap_callback (fun solver ->
+             let typesafe_solver (input: string) =
+               let args = [| (Js.Unsafe.inject (Js.string input)) |] in
+               Js.to_string (Js.Unsafe.fun_call solver args) in
+             FStar_SMTEncoding_Z3.set_bg_z3_proc (wrap_simple_solver typesafe_solver))
 
        val setChannelFlushers =
          Js.wrap_callback (fun fstdout fstderr ->
@@ -69,18 +84,6 @@ let _ =
        val callMainUnsafe =
          (** This disables all exception catching (to get better Javascript backtraces) *)
          Js.wrap_callback (fun () -> FStar_Main.go (); FStar_Main.cleanup (); 0)
-
-       (* val registerVirtualFS = *)
-       (*   Js.wrap_callback (fun mount_point js_handler -> *)
-       (*       register_virtual_fs *)
-       (*         (Js.to_string mount_point) *)
-       (*         (fun fname -> *)
-       (*           let retv : (Js.js_string Js.t) Js.opt = *)
-       (*             let args = [| Js.Unsafe.inject (Js.string fname) |] in *)
-       (*             Js.Unsafe.fun_call js_handler args in *)
-       (*           Js.Opt.case retv *)
-       (*                       (fun () -> None) *)
-       (*                       (fun str -> Some (Js.to_string str)))) *)
 
        val repl =
          (object%js

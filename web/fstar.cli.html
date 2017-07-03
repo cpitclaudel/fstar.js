@@ -13,7 +13,7 @@
 
       <div id="editor">module Scratchpad
 
-let invalid = "A" + 1</div>
+let rec invalid () : int = invalid ()</div>
 
       <p id="examples-box"><span id="examples"></span> (source: <a href="https://github.com/FStarLang/FStar">F*'s repo</a>)</p>
 
@@ -26,7 +26,7 @@ let invalid = "A" + 1</div>
           </span>
           <span id="command-line-args-cell">
             <input id="command-line-args" type="text"
-                   value="--explicit_deps --lax --admit_smt_queries true --fstar_home /fstar" />
+                   value="--z3refresh --fstar_home /fstar --fstar_home /fstar" /> <!-- --explicit_deps --lax --admit_smt_queries true -->
           </span>
           <span id="run-cell">
             <input id="run" type="button" value="" disabled="disabled" />

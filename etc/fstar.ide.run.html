@@ -10,6 +10,23 @@
     <script src="../lib/fstar.global-object.js"></script>
     <script src="../lib/fstar.driver.js"></script>
     <script src="../lib/fstar.ide.utils.js"></script>
+    <!-- <script src="../lib/z3-wasm.core.js"></script> -->
+    <script src="../lib/z3-profiling.core.js"></script>
+    <script src="../lib/fstar.smtdriver.js"></script>
     <script src="./fstar.ide.run.js"></script>
+    <script>
+      // fetch('../lib/z3-wasm.core.wasm')
+      //   .then(response => {
+      //      FStar.SMTDrive.OPTIONS = { wasmBinary: response.arrayBuffer() };
+      //      _.each(["../lib/fstar.smtdriver.js", "./fstar.ide.run.js"], function(path) {
+      //          var script = document.createElement('script');
+      //          script.src = path;
+      //          script.onload = function() {
+      //              console.log("Done loading", path);
+      //          }
+      //          document.body.appendChild(script);
+      //      });
+      //   });
+    </script>
   </body>
 </html>
