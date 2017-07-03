@@ -39,21 +39,21 @@ function ml_z_mul(z1, z2) {
 //Provides: ml_z_div const
 //Requires: bigInt
 function ml_z_div(z1, z2) {
-    return bigInt(z1).div(bigInt(z2)); // FIXME
+    return bigInt(z1).divide(bigInt(z2)); // FIXME
 }
 
 // external cdiv: t -> t -> t = "ml_z_cdiv"
 //Provides: ml_z_cdiv const
 //Requires: bigInt
 function ml_z_cdiv(z1, z2) {
-    return bigInt(z1).div(bigInt(z2)); // FIXME
+    return bigInt(z1).divide(bigInt(z2)); // FIXME
 }
 
 // external fdiv: t -> t -> t = "ml_z_fdiv"
 //Provides: ml_z_fdiv const
 //Requires: bigInt
 function ml_z_fdiv(z1, z2) {
-    return bigInt(z1).div(bigInt(z2)); // FIXME
+    return bigInt(z1).divide(bigInt(z2)); // FIXME
 }
 
 // external rem: t -> t -> t = rem@ASM
