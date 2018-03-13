@@ -64,8 +64,18 @@ function ml_z_rem(z1, z2) {
 }
 
 // external div_rem: t -> t -> (t * t) = "ml_z_div_rem"
-// Should provide ml_z_div_rem const
-function ml_z_div_rem(z1, z2) {
+//Provides: ml_z_div_rem
+//Requires: ml_z_div
+//Requires: ml_z_rem
+//Requires: caml_obj_block
+//Requires: caml_array_set
+function ml_z_div_rem(z1, z2){
+	var div = ml_z_div(z1, z2);
+	var rem = ml_z_rem(z1, z2);
+	var res = caml_obj_block(0, 2);
+	caml_array_set(res, 0, div);
+	caml_array_set(res, 1, rem);
+	return res;
 }
 
 // external succ: t -> t = succ@ASM
@@ -452,7 +462,17 @@ function ml_z_to_bits(z1, z2) {
 }
 
 // external of_bits: string -> t = "ml_z_of_bits"
-// Should provide ml_z_of_bits const
-function ml_z_of_bits(z1, z2) {
-
+//Provides: ml_z_of_bits
+//Requires: bigInt
+function ml_z_of_bits(arg){
+	var zbase = bigInt(256)
+	var acc = bigInt(0);
+	var pow = bigInt(1);
+	for(var i=0; i<arg.l; i++){
+		var base_bump = bigInt(arg.c.charCodeAt(i));
+		var bump = base_bump.multiply(pow);
+		acc = acc.add(bump);
+		pow = pow.multiply(zbase);
+	}
+	return acc;
 }
