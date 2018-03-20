@@ -1,4 +1,4 @@
-/* global bigInt caml_to_js_string caml_js_to_string caml_failwith */
+/* global bigInt caml_to_js_string caml_js_to_string caml_failwith caml_invalid_argument */
 /* eslint-disable no-unused-vars */
 
 //Provides: ml_z_init const
@@ -64,18 +64,18 @@ function ml_z_rem(z1, z2) {
 }
 
 // external div_rem: t -> t -> (t * t) = "ml_z_div_rem"
-//Provides: ml_z_div_rem
+//Provides: ml_z_div_rem const
 //Requires: ml_z_div
 //Requires: ml_z_rem
 //Requires: caml_obj_block
 //Requires: caml_array_set
 function ml_z_div_rem(z1, z2){
-	var div = ml_z_div(z1, z2);
-	var rem = ml_z_rem(z1, z2);
-	var res = caml_obj_block(0, 2);
-	caml_array_set(res, 0, div);
-	caml_array_set(res, 1, rem);
-	return res;
+    var div = ml_z_div(z1, z2);
+    var rem = ml_z_rem(z1, z2);
+    var res = caml_obj_block(0, 2);
+    caml_array_set(res, 0, div);
+    caml_array_set(res, 1, rem);
+    return res;
 }
 
 // external succ: t -> t = succ@ASM
@@ -461,18 +461,34 @@ function ml_z_to_bits(z1, z2) {
 
 }
 
+//Provides: caml_is_8bit_ascii
+function caml_is_8bit_ascii (s) {
+    // Adapted from js_of_ocaml's caml_is_ascii
+    if (s.length < 24) {
+        for (var i = 0; i < s.length; i++) if (s.charCodeAt(i) > 255) return false;
+        return true;
+    } else
+        return !/[^\x00-\xff]/.test(s);
+}
+
 // external of_bits: string -> t = "ml_z_of_bits"
-//Provides: ml_z_of_bits
+//Provides: ml_z_of_bits const
 //Requires: bigInt
+//Requires: caml_is_8bit_ascii
+//Requires: caml_invalid_argument
 function ml_z_of_bits(arg){
-	var zbase = bigInt(256)
-	var acc = bigInt(0);
-	var pow = bigInt(1);
-	for(var i=0; i<arg.l; i++){
-		var base_bump = bigInt(arg.c.charCodeAt(i));
-		var bump = base_bump.multiply(pow);
-		acc = acc.add(bump);
-		pow = pow.multiply(zbase);
-	}
-	return acc;
+    if (caml_is_8bit_ascii(arg)) {
+        var zbase = bigInt(256)
+        var acc = bigInt(0);
+        var pow = bigInt(1);
+        for(var i=0; i<arg.l; i++){
+            var base_bump = bigInt(arg.c.charCodeAt(i));
+            var bump = base_bump.multiply(pow);
+            acc = acc.add(bump);
+            pow = pow.multiply(zbase);
+        }
+        return acc;
+    } else {
+        caml_invalid_argument ("of_bits: non 8-bit characters in string");
+    }
 }
