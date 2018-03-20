@@ -11,29 +11,9 @@
     <div id="main">
       <h1>F*.js</h1>
 
-      <div id="editor">module Scratchpad
-
-let rec invalid () : int = invalid ()</div>
-
-      <p id="examples-box"><span id="examples"></span> (source: <a href="https://github.com/FStarLang/FStar">F*'s repo</a>)</p>
-
-      <hr />
-
-      <div id="control-panel">
-        <div class="row">
-          <span id="file-name-cell">
-            <input id="file-name" type="text" value="scratchpad.fst" />
-          </span>
-          <span id="command-line-args-cell">
-            <input id="command-line-args" type="text"
-                   value="--z3refresh --fstar_home /fstar --fstar_home /fstar" /> <!-- --explicit_deps --lax --admit_smt_queries true -->
-          </span>
-          <span id="run-cell">
-            <input id="run" type="button" value="" disabled="disabled" />
-          </span>
-        </div>
+      <div class="standalone-editor">
+        Loading F*…
       </div>
-      <pre id="stdout"></pre>
 
       <div id="footer">
         Assembled by <a href="http://pit-claudel.fr/clement/">Clément Pit-Claudel</a> by compiling <!-- <a href="http://cvc4.cs.stanford.edu/web/">CVC4</a> v1.5-prerelease/209b088, <a href="https://gmplib.org/">GNU MP</a> v6.1.2 and <a href="http://antlr.org/">ANTLR's C runtime</a> v3.2 with <a href="http://kripken.github.io/emscripten-site/">Emscripten</a>, and -->F* 0.9.4.3/546237c with <a href="https://github.com/ocsigen/js_of_ocaml">js_of_ocaml</a>
@@ -54,7 +34,7 @@ let rec invalid () : int = invalid ()</div>
     <script src="./fstar.js/fstar.client.utils.js"></script>
 
     <script>
-      FStar.CLI.Client.run();
+      window.fstar_cli_client = new FStar.CLI.Client($(".standalone-editor"));
     </script>
   </body>
 </html>
