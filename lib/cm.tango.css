@@ -1,5 +1,7 @@
 /* Based on Sublime Text's Monokai theme */
 
+/* This file is also found in fslit. */
+
 .cm-s-tango.CodeMirror {
     background: white; color: black;
 }
@@ -94,7 +96,8 @@
 }
 
 .cm-s-tango span.cm-def {
-    color: #fd971f;
+    /* color: #fd971f; */
+    font-weight: bold;
 }
 
 .cm-s-tango span.cm-bracket {
