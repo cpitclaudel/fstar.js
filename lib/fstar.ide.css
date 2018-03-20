@@ -9,6 +9,11 @@ html {
     margin: 1rem 0;
 }
 
+.fstar-snippet .fstar-elided-fragment {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .fstar-snippet > .CodeMirror {
     border-bottom: 1px solid #2e3436;
     border-top: 1px solid #2e3436;
