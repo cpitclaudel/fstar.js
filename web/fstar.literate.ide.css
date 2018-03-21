@@ -26,17 +26,3 @@ h1 {
     margin-top: 1rem;
     text-align: right;
 }
-
-.fstar-snippet > .CodeMirror {
-    font-family: "Ubuntu Mono", monospace;
-    width: 100%;
-}
-
-
-.fstar-snippet .CodeMirror-linenumber {
-    padding: 0 5px 0 3px !important;
-}
-
-.fstar-snippet .CodeMirror-gutters {
-    border-right: 1px solid #888a85 !important;
-}

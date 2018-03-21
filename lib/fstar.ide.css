@@ -2,6 +2,14 @@ html {
     font-size: initial !important;
 }
 
+.fstar-standalone-editor {
+    margin: 0.5rem 0;
+}
+
+.fstar-standalone-editor .file-name-cell {
+    display: none !important;
+}
+
 .fstar-snippet {
     color: inherit;
     border-width: 0;
@@ -14,13 +22,15 @@ html {
   text-decoration: underline;
 }
 
-.fstar-snippet > .CodeMirror {
+.fstar-snippet > .CodeMirror,
+.fstar-standalone-editor > .editor > .CodeMirror {
     border-bottom: 1px solid #2e3436;
     border-top: 1px solid #2e3436;
     height: auto;
 }
 
 .fstar-snippet > .CodeMirror,
+.fstar-standalone-editor > .editor > .CodeMirror,
 .fstar-error, .fstar-warning, .fstar-info {
     font-family: "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
 }
@@ -37,7 +47,7 @@ html {
 }
 
 .fstar-snippet-submit {
-    color: blue;
+    color: #3465a4;
     cursor: pointer;
     text-decoration: underline;
 }
@@ -120,7 +130,6 @@ html {
     text-decoration-line: underline;
     /* text-decoration-style: wavy; Broken in Chrome */
 }
-
 
 .fstar-progress-bar {
     background: #2e3436;
