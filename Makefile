@@ -21,6 +21,8 @@ OCAMLBUILD=cd $(OCAML_ROOT) && \
 					-I fstar/src/prettyprint/ml \
 					-I fstar/src/ocaml-output
 
+.SECONDARY: $(OCAML_BUILD_DIR)/FStar_JS_v1.byte $(OCAML_BUILD_DIR)/FStar_JS_v1.d.byte
+
 default: opt
 
 fstar:
@@ -35,10 +37,10 @@ ulib-32:
 	cp $(FSTAR_ROOT)/ulib/ml/*.ml $(ULIB_ML32_ROOT)
 	cp $(FSTAR_ROOT)/ulib/ml/32bit/*.ml $(ULIB_ML32_ROOT)
 
-$(OCAML_BUILD_DIR)/%.byte: ulib-32 build-dirs $(OCAML_ROOT)/%.ml
+$(OCAML_BUILD_DIR)/%.byte: ulib-32 $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
 	$(OCAMLBUILD) "$*.byte"
 
-$(OCAML_BUILD_DIR)/%.d.byte: ulib-32 build-dirs $(OCAML_ROOT)/%.ml
+$(OCAML_BUILD_DIR)/%.d.byte: ulib-32 $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
 	$(OCAMLBUILD) "$*.d.byte"
 
 $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%
@@ -51,7 +53,7 @@ STDLIB_DUMMY_PREFIX=/tmp/dummy
 STDLIB_FS_PATH=$(JS_BUILD_DIR)/fstar.stdlib.js
 STDLIB_INCLUDE_SWITCHES=$(shell ./etc/jsoo_stdlib_fs_switches.py)
 
-$(STDLIB_FS_PATH): build-dirs
+$(STDLIB_FS_PATH): | build-dirs
 	echo "" > "$(STDLIB_DUMMY_PREFIX).ml"
 	ocamlc "$(STDLIB_DUMMY_PREFIX).ml" -o "$(STDLIB_DUMMY_PREFIX).byte"
 	$(JS_OF_OCAML) \
@@ -72,16 +74,16 @@ JSOO_HEAVY_DEBUG_OPTS=--debug-info --no-inline
 
 FSTAR_CORE_APPEND_TAIL=./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.js JSOO_FStar
 
-opt: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.byte
+opt: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.byte | build-dirs
 	$(JS_OF_OCAML) --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte
 	$(FSTAR_CORE_APPEND_TAIL)
 
-debug: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
+debug: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
 	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	$(FSTAR_CORE_APPEND_TAIL)
 
 # --debug-info and --no-inline actually makes some things harder to read
-read: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
+read: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
 	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	$(FSTAR_CORE_APPEND_TAIL)
 
@@ -95,3 +97,4 @@ clean-ocaml:
 
 clean:
 	rm -rf build web/fstar.js
+	+$(MAKE) -C $(FSTAR_ROOT) clean
