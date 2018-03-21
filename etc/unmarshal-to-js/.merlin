@@ -1,0 +1,5 @@
+PKG batteries
+PKG js_of_ocaml
+PKG js_of_ocaml.ppx
+
+B _build/**
