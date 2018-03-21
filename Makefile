@@ -19,6 +19,7 @@ OCAMLBUILD=cd $(OCAML_ROOT) && \
 					-I fstar/src/fstar/ml \
 					-I fstar/src/parser/ml \
 					-I fstar/src/prettyprint/ml \
+					-I fstar/src/tactics/ml \
 					-I fstar/src/ocaml-output
 
 .SECONDARY: $(OCAML_BUILD_DIR)/FStar_JS_v1.byte $(OCAML_BUILD_DIR)/FStar_JS_v1.d.byte
@@ -38,9 +39,11 @@ ulib-32:
 	cp $(FSTAR_ROOT)/ulib/ml/32bit/*.ml $(ULIB_ML32_ROOT)
 
 $(OCAML_BUILD_DIR)/%.byte: ulib-32 $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
+	+$(MAKE) -C $(FSTAR_ROOT)/src/ocaml-output # Needed to build the parser
 	$(OCAMLBUILD) "$*.byte"
 
 $(OCAML_BUILD_DIR)/%.d.byte: ulib-32 $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
+	+$(MAKE) -C $(FSTAR_ROOT)/src/ocaml-output # Needed to build the parser
 	$(OCAMLBUILD) "$*.d.byte"
 
 $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%

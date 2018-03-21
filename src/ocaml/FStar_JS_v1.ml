@@ -12,13 +12,13 @@ let ensure_initialized () =
 
 let repl_init (filename: string) (message_callback: FStar_Util.json -> unit) =
   fail_if_initialized ();
-  FStar_Interactive.js_repl_init_opts ();
-  FStar_Interactive.install_ide_mode_hooks message_callback;
-  message_callback FStar_Interactive.json_of_hello;
-  cur_state := Some (FStar_Interactive.init_repl filename)
+  FStar_Interactive_Ide.js_repl_init_opts ();
+  FStar_Interactive_Ide.install_ide_mode_hooks message_callback;
+  message_callback FStar_Interactive_Ide.json_of_hello;
+  cur_state := Some (FStar_Interactive_Ide.build_initial_repl_state filename)
 
 let repl_eval_str query =
-  let js_str, st_or_exit = FStar_Interactive.js_repl_eval_str (ensure_initialized ()) query in
+  let js_str, st_or_exit = FStar_Interactive_Ide.js_repl_eval_str (ensure_initialized ()) query in
   (match st_or_exit with        (* FIXME *)
    | FStar_Util.Inl st -> cur_state := Some st
    | _ -> ());

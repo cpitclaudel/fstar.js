@@ -1,5 +1,16 @@
-true: annot, bin_annot, warn(-8-11-20-21-26-28), package(batteries), \
-  package(zarith), package(yojson), package(pprint), \
-  package(compiler-libs), package(compiler-libs.common), \
-  package(js_of_ocaml), package(js_of_ocaml.ppx), \
-  thread, -traverse
+true: \
+  annot, bin_annot, thread, -traverse, \
+  warn(-8-11-20-21-26-28), \
+  package(batteries), \
+  package(compiler-libs), \
+  package(compiler-libs.common), \
+  package(dynlink), \
+  package(js_of_ocaml), \
+  package(js_of_ocaml.ppx), \
+  package(menhirLib), \
+  package(pprint), \
+  package(stdint), \
+  package(ulex), \
+  package(yojson), \
+  package(zarith)
+
