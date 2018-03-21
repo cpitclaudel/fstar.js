@@ -6,7 +6,7 @@ def main():
     for directory in dirs:
         for root, _dirs, files in walk(directory):
             for fname in files:
-                if path.splitext(fname)[1] == ".fst":
+                if path.splitext(fname)[1] in (".fst", ".fst.checked"):
                     rooted = path.join(root, fname)
                     relative = path.relpath(rooted, start="src/ocaml/fstar/")
                     js_path = path.normpath(path.join("/fstar/", relative))
