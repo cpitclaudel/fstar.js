@@ -59,7 +59,7 @@ $(STDLIB_FS_PATH): build-dirs
 		--wrap-with-fun --opt 3 $(STDLIB_FS_OPTS) \
 		--extern-fs -I . $(STDLIB_INCLUDE_SWITCHES) "--ofs=$(STDLIB_FS_PATH)" \
 		"$(STDLIB_DUMMY_PREFIX).byte" -o "$(STDLIB_DUMMY_PREFIX).js"
-	./etc/append-tail.sh "$(STDLIB_FS_PATH)" etc/fstar.stdlib.tail.js
+	./etc/append_tail.py "$(STDLIB_FS_PATH)" etc/fstar.stdlib.tail.js
 
 fs: $(STDLIB_FS_PATH)
 
@@ -72,16 +72,16 @@ JSOO_HEAVY_DEBUG_OPTS=--debug-info --no-inline
 
 opt: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.byte
 	$(JS_OF_OCAML) --custom-header="var JSOO_FStar=" --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte
-	./etc/append-tail.sh $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
+	./etc/append_tail.py $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
 
 debug: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	$(JS_OF_OCAML) --custom-header="var JSOO_FStar=" $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
-	./etc/append-tail.sh $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
+	./etc/append_tail.py $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
 
 # --debug-info and --no-inline actually makes some things harder to read
 read: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	$(JS_OF_OCAML) --custom-header="var JSOO_FStar=" $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
-	./etc/append-tail.sh $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
+	./etc/append_tail.py $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
 
 serve:
 	cp $(JS_BUILD_DIR)/fstar.*.js lib/
