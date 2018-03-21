@@ -64,32 +64,32 @@ $(STDLIB_FS_PATH): build-dirs
 fs: $(STDLIB_FS_PATH)
 
 ## JSOO options
+# FIXME Replace --custom-header with --wrap-with-fun=… after moving to jsoo 3.0
 JS_LIBS=src/js/BigInteger.js src/js/zarith.js src/js/overrides.js +nat.js +toplevel.js +weak.js
-JSOO_OPTS=--wrap-with-fun --extern-fs $(JS_LIBS) -o $(JS_BUILD_DIR)/fstar.core.js
+JSOO_OPTS=--wrap-with-fun --custom-header="var JSOO_FStar=" --extern-fs $(JS_LIBS) -o $(JS_BUILD_DIR)/fstar.core.js
 JSOO_LIGHT_DEBUG_OPTS=--pretty --source-map
 JSOO_HEAVY_DEBUG_OPTS=--debug-info --no-inline
-# FIXME remove the ‘var JSOO…’ bits when moving to 3.0, though file handling is broken ATM
 
 opt: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.byte
-	$(JS_OF_OCAML) --custom-header="var JSOO_FStar=" --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte
+	$(JS_OF_OCAML) --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte
 	./etc/append_tail.py $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
 
 debug: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
-	$(JS_OF_OCAML) --custom-header="var JSOO_FStar=" $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
+	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	./etc/append_tail.py $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
 
 # --debug-info and --no-inline actually makes some things harder to read
 read: $(STDLIB_FS_PATH) build-dirs $(OCAML_BUILD_DIR)/fstar.core.d.byte
-	$(JS_OF_OCAML) --custom-header="var JSOO_FStar=" $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
+	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	./etc/append_tail.py $(JS_BUILD_DIR)/fstar.core.js etc/fstar.core.tail.js
 
 serve:
-	cp $(JS_BUILD_DIR)/fstar.*.js lib/
-	if [ ! -d "web/fstar.js" ]; then ln -s "$(realpath lib)" "web/fstar.js"; fi
+	mkdir -p web/fstar.js/
+	cp vendor/z3.js/* lib/*.js $(JS_BUILD_DIR)/fstar.*.js web/fstar.js/
 	python3 -m http.server
 
 clean-ocaml:
 	rm -rf $(OCAML_BUILD_DIR)
 
 clean:
-	rm -rf build
+	rm -rf build web/fstar.js

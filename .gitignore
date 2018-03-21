@@ -5,8 +5,5 @@ attic.*
 /scratch/
 /src/ocaml/tmp/
 
-/web/fstar.js
-/lib/fstar.stdlib.js
-/lib/fstar.core.js
-/lib/z3-*
-/etc/z3-*
+/vendor/z3.js/
+/web/fstar.js/
