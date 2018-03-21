@@ -1,4 +1,4 @@
-true: annot, bin_annot, warn(-8-11-21-26-28), package(batteries), \
+true: annot, bin_annot, warn(-8-11-20-21-26-28), package(batteries), \
   package(zarith), package(yojson), package(pprint), \
   package(compiler-libs), package(compiler-libs.common), \
   package(js_of_ocaml), package(js_of_ocaml.ppx), \
