@@ -21,6 +21,7 @@ OCAMLBUILD=cd $(OCAML_ROOT) && \
 					-I fstar/src/parser/ml \
 					-I fstar/src/prettyprint/ml \
 					-I fstar/src/tactics/ml \
+					-I fstar/ulib/ml \
 					-I fstar/src/ocaml-output
 
 .SECONDARY: $(OCAML_BUILD_DIR)/FStar_JS_v1.byte $(OCAML_BUILD_DIR)/FStar_JS_v1.d.byte
