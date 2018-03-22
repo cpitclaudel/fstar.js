@@ -3,6 +3,7 @@ OCAML_BUILD_DIR=build/ocaml
 
 OCAML_ROOT=src/ocaml
 FSTAR_ROOT=$(OCAML_ROOT)/fstar
+STDLIB=$(FSTAR_ROOT)/ulib
 ULIB_ML32_SUBDIR=tmp/ulib-ml32
 ULIB_ML32_ROOT=$(OCAML_ROOT)/$(ULIB_ML32_SUBDIR)
 
@@ -26,9 +27,6 @@ OCAMLBUILD=cd $(OCAML_ROOT) && \
 
 default: opt
 
-fstar:
-	$(MAKE) -C $(FSTAR_ROOT)/src/ ocaml-fstar-ocaml
-
 build-dirs:
 	mkdir -p $(JS_BUILD_DIR)
 	mkdir -p $(OCAML_BUILD_DIR)
@@ -38,12 +36,13 @@ ulib-32:
 	cp $(FSTAR_ROOT)/ulib/ml/*.ml $(ULIB_ML32_ROOT)
 	cp $(FSTAR_ROOT)/ulib/ml/32bit/*.ml $(ULIB_ML32_ROOT)
 
-$(OCAML_BUILD_DIR)/%.byte: ulib-32 $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
+fstar:
 	+$(MAKE) -C $(FSTAR_ROOT)/src/ocaml-output # Needed to build the parser
+
+$(OCAML_BUILD_DIR)/%.byte: ulib-32 fstar $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
 	$(OCAMLBUILD) "$*.byte"
 
-$(OCAML_BUILD_DIR)/%.d.byte: ulib-32 $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
-	+$(MAKE) -C $(FSTAR_ROOT)/src/ocaml-output # Needed to build the parser
+$(OCAML_BUILD_DIR)/%.d.byte: ulib-32 fstar $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
 	$(OCAMLBUILD) "$*.d.byte"
 
 $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%
@@ -54,15 +53,26 @@ $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%
 # -I indicates which directory the files in STDLIB_INCLUDE_SWITCHES are relative to
 STDLIB_DUMMY_PREFIX=/tmp/dummy
 STDLIB_FS_PATH=$(JS_BUILD_DIR)/fstar.stdlib.js
-STDLIB_INCLUDE_SWITCHES=$(shell ./etc/jsoo_stdlib_fs_switches.py)
 
-$(STDLIB_FS_PATH): | build-dirs
+STDLIB_FILES_EXCLUDED=$(addprefix $(STDLIB)/,FStar.Int31.fst FStar.UInt31.fst FStar.Relational.State.fst) # See ulib/Makefile.verify
+STDLIB_FILES_SOURCES=$(wildcard $(STDLIB)/FStar.*.fst $(STDLIB)/FStar.*.fsti)
+STDLIB_FILES_SOURCES_TO_CHECK=$(filter-out $(STDLIB_FILES_EXCLUDED),$(STDLIB_FILES_SOURCES))
+STDLIB_FILES_CHECKED=$(STDLIB_FILES_SOURCES_TO_CHECK:=.checked)
+STDLIB_FILES_ALL=$(STDLIB_FILES_SOURCES) $(STDLIB_FILES_CHECKED)
+
+JSOO_ROOT=/fstar/
+STDLIB_JSOO_SWITCHES=$(shell ./etc/jsoo_fs_flags.py --local-root $(FSTAR_ROOT) --jsoo-root $(JSOO_ROOT) $(STDLIB_FILES_ALL))
+
+$(STDLIB_FILES_CHECKED): fstar $(STDLIB_FILES_SOURCES)
+	+$(MAKE) -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(@:$(STDLIB)/%=%)
+
+$(STDLIB_FS_PATH): $(STDLIB_FILES_ALL) | build-dirs
 	echo "" > "$(STDLIB_DUMMY_PREFIX).ml"
 	ocamlc "$(STDLIB_DUMMY_PREFIX).ml" -o "$(STDLIB_DUMMY_PREFIX).byte"
 	$(JS_OF_OCAML) \
 		--custom-header="var JSOO_FStar_Stdlib=" \
 		--wrap-with-fun --opt 3 $(STDLIB_FS_OPTS) \
-		--extern-fs -I . $(STDLIB_INCLUDE_SWITCHES) "--ofs=$(STDLIB_FS_PATH)" \
+		--extern-fs -I . $(STDLIB_JSOO_SWITCHES) "--ofs=$(STDLIB_FS_PATH)" \
 		"$(STDLIB_DUMMY_PREFIX).byte" -o "$(STDLIB_DUMMY_PREFIX).js"
 	./etc/jsoo_append_tail.py "$(STDLIB_FS_PATH)" JSOO_FStar_Stdlib
 
