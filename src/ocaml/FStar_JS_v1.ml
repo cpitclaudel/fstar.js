@@ -43,11 +43,25 @@ let wrap_simple_solver (solver: string -> string) =
     FStar_SMTEncoding_Z3.refresh = refresh_restart;
     FStar_SMTEncoding_Z3.restart = refresh_restart }
 
+let rec restart_on_overflow n f x =
+  try f x (* FIXME this isn't enough: F* catches it (on single-file examples). *)
+  with Stack_overflow when n > 0 ->
+    FStar_Util.print1 "Stack overflow: restarting (%s)" (string_of_int n);
+    restart_on_overflow (n - 1) f x
+
+exception Exit of int
+
+let main () =
+  FStar_Main.setup_hooks ();
+  FStar_Main.go ();
+  FStar_Main.cleanup ();
+  0
+
 let _ =
   Js.export_all
     (object%js
        val quit = (* Called by the ‘Sys.exit’ handler in JSOO. *)
-         Js.wrap_callback (fun (exitCode: int) -> raise (FStar_Main.Exit (Z.of_int exitCode)))
+         Js.wrap_callback (fun (exitCode: int) -> raise (Exit exitCode))
 
        val chdir = Js.wrap_callback Sys.chdir
 
@@ -76,15 +90,18 @@ let _ =
 
        val callMain =
          Js.wrap_callback (fun () ->
-             try
-               let _ = FStar_Main.main () in 0
-             with FStar_Main.Exit exitCode -> (* ‘Exit’ is raised by ‘quit’ above. *)
-               Z.to_int exitCode
-           )
+             restart_on_overflow 5 (fun () ->
+                 try main ()
+                 with (* ‘Exit’ is raised by ‘quit’ above. *)
+                 | Exit exitCode -> exitCode
+                 | e when e <> Stack_overflow -> FStar_Main.handle_error e; 1) ())
 
        val callMainUnsafe =
          (** This disables all exception catching (to get better Javascript backtraces) *)
-         Js.wrap_callback (fun () -> FStar_Main.go (); FStar_Main.cleanup (); 0)
+         Js.wrap_callback main
+
+       val registerLazyFS =
+         Js.Unsafe.js_expr "registerLazyFS"
 
        val repl =
          (object%js
@@ -99,6 +116,6 @@ let _ =
 
             val evalStr =
               Js.wrap_callback (fun (query: Js.js_string Js.t) ->
-                  Js.string (repl_eval_str (Js.to_string query)))
+                  Js.string (restart_on_overflow 5 repl_eval_str (Js.to_string query)))
           end)
      end)
