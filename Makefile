@@ -49,36 +49,6 @@ $(OCAML_BUILD_DIR)/%.d.byte: ulib-32 fstar $(OCAML_ROOT)/%.ml | ulib-32 build-di
 $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%
 	cp "$<" "$@"
 
-## Single-file stdlib package
-# We need a dummy bytecode object to compile the file system separately
-# -I indicates which directory the files in STDLIB_INCLUDE_SWITCHES are relative to
-STDLIB_DUMMY_PREFIX=/tmp/dummy
-STDLIB_FS_PATH=$(JS_BUILD_DIR)/fstar.stdlib.js
-
-STDLIB_FILES_EXCLUDED=$(addprefix $(STDLIB)/,FStar.Int31.fst FStar.UInt31.fst FStar.Relational.State.fst) # See ulib/Makefile.verify
-STDLIB_FILES_SOURCES=$(wildcard $(STDLIB)/FStar.*.fst $(STDLIB)/FStar.*.fsti)
-STDLIB_FILES_SOURCES_TO_CHECK=$(filter-out $(STDLIB_FILES_EXCLUDED),$(STDLIB_FILES_SOURCES))
-STDLIB_FILES_CHECKED=$(STDLIB_FILES_SOURCES_TO_CHECK:=.checked)
-STDLIB_FILES_ALL=$(STDLIB_FILES_SOURCES) $(STDLIB_FILES_CHECKED)
-
-JSOO_ROOT=/fstar/
-STDLIB_JSOO_SWITCHES=$(shell ./etc/jsoo_fs_flags.py --local-root $(FSTAR_ROOT) --jsoo-root $(JSOO_ROOT) $(STDLIB_FILES_ALL))
-
-$(STDLIB_FILES_CHECKED): fstar $(STDLIB_FILES_SOURCES)
-	+$(MAKE) -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(@:$(STDLIB)/%=%)
-
-$(STDLIB_FS_PATH): $(STDLIB_FILES_ALL) | build-dirs
-	echo "" > "$(STDLIB_DUMMY_PREFIX).ml"
-	ocamlc "$(STDLIB_DUMMY_PREFIX).ml" -o "$(STDLIB_DUMMY_PREFIX).byte"
-	$(JS_OF_OCAML) \
-		--custom-header="var JSOO_FStar_Stdlib=" \
-		--wrap-with-fun --opt 3 $(STDLIB_FS_OPTS) \
-		--extern-fs -I . $(STDLIB_JSOO_SWITCHES) "--ofs=$(STDLIB_FS_PATH)" \
-		"$(STDLIB_DUMMY_PREFIX).byte" -o "$(STDLIB_DUMMY_PREFIX).js"
-	./etc/jsoo_append_tail.py "$(STDLIB_FS_PATH)" JSOO_FStar_Stdlib
-
-fs: $(STDLIB_FS_PATH)
-
 ## JSOO options
 # FIXME Replace --custom-header with --wrap-with-fun=… after moving to jsoo 3.0
 JS_LIBS=src/js/BigInteger.js src/js/zarith.js src/js/overrides.js +nat.js +toplevel.js +weak.js
@@ -100,10 +70,19 @@ debug: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
 read: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
 	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
 	$(FSTAR_CORE_APPEND_TAIL)
+STDLIB_FILES_EXCLUDED=$(addprefix $(STDLIB)/,FStar.Int31.fst FStar.UInt31.fst FStar.Relational.State.fst) # See ulib/Makefile.verify
+STDLIB_FILES_SOURCES=$(wildcard $(STDLIB)/FStar.*.fst $(STDLIB)/FStar.*.fsti) $(STDLIB)/prims.fst
+STDLIB_FILES_SOURCES_TO_CHECK=$(filter-out $(STDLIB_FILES_EXCLUDED),$(STDLIB_FILES_SOURCES))
+STDLIB_FILES_CHECKED=$(STDLIB_FILES_SOURCES_TO_CHECK:=.checked)
+STDLIB_FILES_ALL=$(STDLIB_FILES_SOURCES) $(STDLIB_FILES_CHECKED)
 
 serve:
 	mkdir -p web/fstar.js/
-	cp vendor/z3.js/* lib/*.js $(JS_BUILD_DIR)/fstar.*.js web/fstar.js/
+	cp vendor/z3.js/* lib/* $(JS_BUILD_DIR)/fstar.*.js web/fstar.js/
+	mkdir -p web/fstar.js/fs/ web/fstar.js/fs/ulib/
+	@+$(MAKE) -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(STDLIB_FILES_CHECKED:$(STDLIB)/%=%)
+	@cp $(STDLIB_FILES_ALL) web/fstar.js/fs/ulib/
+	etc/jsoo_lazy_fs_index.py web/fstar.js/fs/ > web/fstar.js/fs/index.json
 	python3 -m http.server
 
 clean-ocaml:
