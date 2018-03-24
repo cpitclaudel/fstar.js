@@ -1,3 +1,6 @@
+/* eslint no-undef: "off" */
+/* eslint no-unused-vars: "off" */
+
 //Provides: unix_isatty
 function unix_isatty() {
     return 0; // false
@@ -64,36 +67,74 @@ function caml_thread_cleanup() { }
 //Provides: caml_thread_join const
 function caml_thread_join(t) { }
 
-/// We create factory functions, not global objects.
+// Provides: unix_stat
+// Requires: caml_sys_file_exists, caml_ml_open_descriptor_in
+// Requires: caml_sys_open, caml_ml_set_channel_name
+// Requires: caml_ml_close_channel, caml_ml_channel_size
+// Requires: caml_new_string, caml_sys_is_directory
+// Requires: caml_named_value, caml_bytes_of_string
+function unix_stat(fname) {
+    if (!caml_sys_file_exists(fname)) {
+        var errname = caml_new_string("Unix.Unix_error");
+        var Unix_error = caml_named_value(caml_bytes_of_string(errname));
+        throw [0, Unix_error, 20, caml_new_string("stat"), fname];
+    }
 
-//Provides: caml_js_export_var
-function caml_js_export_var () {
-    // Always use joo_global_object (the original version uses module.exports if
-    // available, but this only works if you're creating a single instance of
-    // the JSOO application).
-    return joo_global_object;
+    var is_dir = caml_sys_is_directory(fname) ? 1 : 0;
+    var kind = is_dir ? 1 : 0;
+    var perms = is_dir ? 493 : 420;
+
+    var size = 4096;
+    if (!is_dir) {
+        var channel = caml_ml_open_descriptor_in(caml_sys_open(fname, [0,0,[0,7,0]], 0));
+        caml_ml_set_channel_name(channel, fname);
+        size = caml_ml_channel_size(channel);
+        caml_ml_close_channel(channel);
+    }
+
+    return [0, -1, -1, kind, perms, -1, -1, -1, -1, size, -1, -1, -1];
 }
 
-// //Provides: caml_sys_file_exists
-// //Requires: caml_root_dir, caml_make_path
-// function caml_sys_file_exists (name) {
-//     console.log("Checking for ", name);
-//     var dir = caml_root_dir;
-//     var path = caml_make_path(name);
-//     var auto_load;
-//     var pos;
-//     for(var i=0;i<path.length;i++){
-//         if(dir.auto) { auto_load = dir.auto; pos = i}
-//         if(!(dir.exists && dir.exists(path[i]))) {
-//             if(auto_load) {
-//                 return auto_load(path,pos);
-//             }
-//             else {
-//                 console.log("Segment", path[i], "doesn't exist");
-//                 return 0;
-//             }
-//         }
-//         dir=dir.get(path[i]);
-//     }
-//     return 1;
-// }
+/// Our files are read as arrays:
+/*
+FIXME: this doesn't seem to make things much faster
+
+//Provides: MlStringReader
+//Requires: caml_string_of_array, caml_array_of_string
+function MlStringReader (s, i) {
+    this.s = caml_array_of_string(s);
+    this.i = i;
+}
+
+MlStringReader.prototype = {
+    read8u:function () { return this.s[this.i++]; },
+    read8s:function () { return this.s[this.i++] << 24 >> 24; },
+    read16u:function () {
+        var s = this.s, i = this.i;
+        this.i = i + 2;
+        return (s[i] << 8) | s[i + 1];
+    },
+    read16s:function () {
+        var s = this.s, i = this.i;
+        this.i = i + 2;
+        return (s[i] << 24 >> 16) | s[i + 1];
+    },
+    read32u:function () {
+        var s = this.s, i = this.i;
+        this.i = i + 4;
+        return ((s[i] << 24) | (s[i+1] << 16) |
+                (s[i+2] << 8) | s[i+3]) >>> 0;
+    },
+    read32s:function () {
+        var s = this.s, i = this.i;
+        this.i = i + 4;
+        return (s[i] << 24) | (s[i+1] << 16) |
+            (s[i+2] << 8) | s[i+3];
+    },
+    readstr:function (len) {
+        var i = this.i;
+        this.i += len;
+        return caml_string_of_array(this.s.slice(i, i + len));
+    }
+};
+*/
