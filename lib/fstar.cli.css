@@ -14,8 +14,9 @@
 .fstar-standalone-editor .command-line-args,
 .fstar-standalone-editor .file-name,
 .fstar-standalone-editor .run,
-.fstar-standalone-editor .stdout {
-    font-family: "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
+.fstar-standalone-editor .stdout,
+.fstar-standalone-editor .editor .CodeMirror {
+    font-family: "Fira Code", "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
 }
 
 .fstar-standalone-editor .command-line-args,

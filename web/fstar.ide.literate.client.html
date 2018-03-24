@@ -5,8 +5,9 @@
     <title>F*.js IDE demo</title>
     <link rel="stylesheet" href="./fstar.js/fstar.ide.css">
     <link rel="stylesheet" href="./fstar.ide.literate.css">
+    <link rel="stylesheet" href="./fstar.js/cm.tango.css">
+    <link rel="stylesheet" href="./fira-code.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.2/codemirror.min.css" integrity="sha256-jZCpvbpc2qMTgaR9eZxX0qxtyrGW+7SLgkQN+ngQKQs=" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.2/theme/monokai.min.css" integrity="sha256-6ov3WWd9ybfZPeJBlXBgQuD/aLhTRCEp5kBhqD9ke0o=" crossorigin="anonymous" />
   </head>
   <body>
     <div id="main">
@@ -131,6 +132,17 @@ let rec subst x e e' =
 
     <script>
       FStar.IDE.LiterateClient.run("stlc.fst");
+
+      if (document && document.fonts && document.fonts.ready) {
+          // Normally added by fslit.js
+          document.fonts.ready.then(function () {
+              var editors = document.getElementsByClassName("CodeMirror");
+              for (var idx = 0; idx < editors.length; idx++) {
+                  var editor = editors[idx].CodeMirror;
+                  editor && editor.refresh();
+              }
+          });
+      }
     </script>
   </body>
 </html>

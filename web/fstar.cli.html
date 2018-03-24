@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>F*.js demo</title>
     <link rel="stylesheet" href="./fstar.cli.css">
+    <link rel="stylesheet" href="./fira-code.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.2/codemirror.min.css" integrity="sha256-jZCpvbpc2qMTgaR9eZxX0qxtyrGW+7SLgkQN+ngQKQs=" crossorigin="anonymous" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.27.2/theme/monokai.min.css" integrity="sha256-6ov3WWd9ybfZPeJBlXBgQuD/aLhTRCEp5kBhqD9ke0o=" crossorigin="anonymous" />
   </head>
@@ -35,6 +36,17 @@
 
     <script>
       window.fstar_cli_client = new FStar.CLI.Client($(".standalone-editor"));
+
+      if (document && document.fonts && document.fonts.ready) {
+          // Also found in fslit.js
+          document.fonts.ready.then(function () {
+              var editors = document.getElementsByClassName("CodeMirror");
+              for (var idx = 0; idx < editors.length; idx++) {
+                  var editor = editors[idx].CodeMirror;
+                  editor && editor.refresh();
+              }
+          });
+      }
     </script>
   </body>
 </html>

@@ -32,7 +32,7 @@ html {
 .fstar-snippet > .CodeMirror,
 .fstar-standalone-editor > .editor > .CodeMirror,
 .fstar-error, .fstar-warning, .fstar-info {
-    font-family: "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
+    font-family: "Fira Code", "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
 }
 
 .fstar-control-panel {
@@ -128,7 +128,7 @@ html {
 
 .fstar-error-marker, .fstar-warning-marker, .fstar-info-marker {
     text-decoration-line: underline;
-    /* text-decoration-style: wavy; Broken in Chrome */
+    /* text-decoration-style: wavy; Unsupported in Chrome */
 }
 
 .fstar-progress-bar {
