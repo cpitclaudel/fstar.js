@@ -12,6 +12,7 @@ let ensure_initialized () =
 
 let repl_init (filename: string) (message_callback: FStar_Util.json -> unit) =
   fail_if_initialized ();
+  FStar_Main.setup_hooks ();
   FStar_Interactive_Ide.js_repl_init_opts ();
   FStar_Interactive_Ide.install_ide_mode_hooks message_callback;
   message_callback FStar_Interactive_Ide.json_of_hello;
