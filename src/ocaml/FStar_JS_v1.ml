@@ -58,7 +58,7 @@ let _ =
              if Sys.file_exists name then
                Sys_js.update_file ~name ~content
              else
-               Sys_js.register_file ~name ~content)
+               Sys_js.create_file ~name ~content)
 
        val setSMTSolver =
          Js.wrap_callback (fun solver ->
