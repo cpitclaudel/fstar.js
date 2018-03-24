@@ -25,6 +25,10 @@
     font-size: 1rem;
 }
 
+.fstar-standalone-editor .stdout {
+    white-space: pre-wrap;
+}
+
 .fstar-standalone-editor .command-line-args {
     box-sizing: border-box;
     width: 100%;
