@@ -2,6 +2,7 @@ attic.*
 /todo.org
 
 /build/
+/build.bak/
 /scratch/
 /src/ocaml/tmp/
 
