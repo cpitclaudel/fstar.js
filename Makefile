@@ -50,26 +50,28 @@ $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%
 	cp "$<" "$@"
 
 ## JSOO options
-# FIXME Replace --custom-header with --wrap-with-fun=… after moving to jsoo 3.0
-JS_LIBS=src/js/BigInteger.js src/js/zarith.js src/js/overrides.js +nat.js +toplevel.js +weak.js
-JSOO_OPTS=--wrap-with-fun --custom-header="var JSOO_FStar=" --extern-fs $(JS_LIBS) -o $(JS_BUILD_DIR)/fstar.core.js
-JSOO_LIGHT_DEBUG_OPTS=--pretty --source-map
+JS_LIBS=src/js/BigInteger.js src/js/zarith.js src/js/fs_lazy.js src/js/overrides.js +nat.js +toplevel.js
+JSOO_OPTS=--wrap-with-fun=JSOO_FStar --extern-fs $(JS_LIBS)
+JSOO_DISABLED_OPTIMIZATIONS= #deadcode inline shortvar staticeval share strict debugger genprim excwrap optcall
+JSOO_LIGHT_DEBUG_OPTS=--pretty --source-map $(addprefix --disable ,$(JSOO_DISABLED_OPTIMIZATIONS))
 JSOO_HEAVY_DEBUG_OPTS=--debug-info --no-inline
 
-FSTAR_CORE_APPEND_TAIL=./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.js JSOO_FStar
+opt: $(OCAML_BUILD_DIR)/fstar.core.byte | build-dirs
+	$(JS_OF_OCAML) --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte -o $(JS_BUILD_DIR)/fstar.core.$@.js
+	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
+	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
 
-opt: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.byte | build-dirs
-	$(JS_OF_OCAML) --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte
-	$(FSTAR_CORE_APPEND_TAIL)
-
-debug: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
-	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
-	$(FSTAR_CORE_APPEND_TAIL)
+debug: $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
+	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte  -o $(JS_BUILD_DIR)/fstar.core.$@.js
+	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
+	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
 
 # --debug-info and --no-inline actually makes some things harder to read
-read: $(STDLIB_FS_PATH) $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
-	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte
-	$(FSTAR_CORE_APPEND_TAIL)
+read: $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
+	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte  -o $(JS_BUILD_DIR)/fstar.core.$@.js
+	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
+	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
+
 STDLIB_FILES_EXCLUDED=$(addprefix $(STDLIB)/,FStar.Int31.fst FStar.UInt31.fst FStar.Relational.State.fst) # See ulib/Makefile.verify
 STDLIB_FILES_SOURCES=$(wildcard $(STDLIB)/FStar.*.fst $(STDLIB)/FStar.*.fsti) $(STDLIB)/prims.fst
 STDLIB_FILES_SOURCES_TO_CHECK=$(filter-out $(STDLIB_FILES_EXCLUDED),$(STDLIB_FILES_SOURCES))
@@ -84,6 +86,10 @@ serve:
 	@cp $(STDLIB_FILES_ALL) web/fstar.js/fs/ulib/
 	etc/jsoo_lazy_fs_index.py web/fstar.js/fs/ > web/fstar.js/fs/index.json
 	python3 -m http.server
+
+serve-%:
+	cp $(JS_BUILD_DIR)/fstar.core.$*.js $(JS_BUILD_DIR)/fstar.core.js
+	+$(MAKE) serve
 
 clean-ocaml:
 	rm -rf $(OCAML_BUILD_DIR)
