@@ -49,15 +49,15 @@ $(OCAML_BUILD_DIR)/%.d.byte: ulib-32 fstar $(OCAML_ROOT)/%.ml | ulib-32 build-di
 $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%
 	cp "$<" "$@"
 
-## JSOO options
+## JSOO options.  Compiling in opt mode with --disable inline reduces stack overflows
 JS_LIBS=src/js/BigInteger.js src/js/zarith.js src/js/fs_lazy.js src/js/overrides.js +nat.js +toplevel.js
-JSOO_OPTS=--wrap-with-fun=JSOO_FStar --extern-fs $(JS_LIBS)
+JSOO_OPTS=--wrap-with-fun=JSOO_FStar --extern-fs $(JS_LIBS) --disable inline --debug times
 JSOO_DISABLED_OPTIMIZATIONS= #deadcode inline shortvar staticeval share strict debugger genprim excwrap optcall
 JSOO_LIGHT_DEBUG_OPTS=--pretty --source-map $(addprefix --disable ,$(JSOO_DISABLED_OPTIMIZATIONS))
-JSOO_HEAVY_DEBUG_OPTS=--debug-info --no-inline
+JSOO_HEAVY_DEBUG_OPTS=--debug-info --disable inline # --debug-info and --disable inline make some things harder to read
 
 opt: $(OCAML_BUILD_DIR)/fstar.core.byte | build-dirs
-	$(JS_OF_OCAML) --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte -o $(JS_BUILD_DIR)/fstar.core.$@.js
+	$(JS_OF_OCAML) --disable inline --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte -o $(JS_BUILD_DIR)/fstar.core.$@.js
 	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
 	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
 
@@ -66,7 +66,6 @@ debug: $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
 	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
 	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
 
-# --debug-info and --no-inline actually makes some things harder to read
 read: $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
 	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte  -o $(JS_BUILD_DIR)/fstar.core.$@.js
 	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
