@@ -31,7 +31,8 @@ html {
 
 .fstar-snippet > .CodeMirror,
 .fstar-standalone-editor > .editor > .CodeMirror,
-.fstar-error, .fstar-warning, .fstar-info {
+.fstar-error, .fstar-warning, .fstar-info,
+.fstar-progress-echo-area {
     font-family: "Fira Code", "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
 }
 
@@ -132,16 +133,31 @@ html {
 }
 
 .fstar-progress-bar {
-    background: #2e3436;
+    background-color: #2e3436;
     border-top: 1px solid #555753;
     box-sizing: content-box;
     bottom: 0;
     display: flex;
     flex-direction: row;
-    height: 1rem;
+    height: 1.5rem;
     left: 0;
     position: fixed;
     width: calc(100% + 0.5px);
+    z-index: 1000;
+}
+
+.fstar-progress-echo-area {
+    background: #2e3436;
+    border-color: #555753;
+    border-style: solid;
+    border-width: 1px 1px 0 0;
+    bottom: 1.5rem;
+    color: #ce5c00;
+    font-size: 0.75rem;
+    font-weight: bold;
+    left: 0;
+    padding: 0.25rem;
+    position: fixed;
     z-index: 1000;
 }
 
@@ -149,6 +165,7 @@ html {
     box-sizing: border-box;
     border-right: 0.5px solid #555753;
     flex-grow: 1; /* Dynamically adjusted */
+    height: 1.5rem;
 }
 
 .fstar-active-progress-bar-element {
