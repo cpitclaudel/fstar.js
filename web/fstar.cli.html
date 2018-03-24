@@ -35,7 +35,8 @@
     <script src="./fstar.js/fstar.client.utils.js"></script>
 
     <script>
-      window.fstar_cli_client = new FStar.CLI.Client($(".standalone-editor"));
+      var $editor = $(".standalone-editor");
+      var client = window.fstar_cli_client = new FStar.CLI.Client($editor, "STLC.fst", $editor.text());
 
       if (document && document.fonts && document.fonts.ready) {
           // Also found in fslit.js
