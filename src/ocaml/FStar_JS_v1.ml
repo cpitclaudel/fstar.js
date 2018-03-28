@@ -5,7 +5,7 @@ let fail_if_initialized () =
   | None -> ()
   | Some _ -> failwith "REPL already initialized"
 
-let ensure_initialized () =
+let assert_initialized () =
   match !cur_state with
   | Some st -> st
   | None -> failwith "REPL not initialized yet"
@@ -13,46 +13,34 @@ let ensure_initialized () =
 let repl_init (filename: string) (message_callback: FStar_Util.json -> unit) =
   fail_if_initialized ();
   FStar_Main.setup_hooks ();
+  FStar_SMTEncoding_Z3.set_z3_options "";
   FStar_Interactive_Ide.js_repl_init_opts ();
   FStar_Interactive_Ide.install_ide_mode_hooks message_callback;
   message_callback FStar_Interactive_Ide.json_of_hello;
   cur_state := Some (FStar_Interactive_Ide.build_initial_repl_state filename)
 
 let repl_eval_str query =
-  let js_str, st_or_exit = FStar_Interactive_Ide.js_repl_eval_str (ensure_initialized ()) query in
-  (match st_or_exit with        (* FIXME *)
+  let js_str, st_or_exit = FStar_Interactive_Ide.js_repl_eval_str (assert_initialized ()) query in
+  (match st_or_exit with
    | FStar_Util.Inl st -> cur_state := Some st
-   | _ -> ());
+   | FStar_Util.Inr _exitCode -> (* FIXME *) ());
   js_str
 
-let wrap_simple_solver (solver: string -> string) =
-  let needs_restart = ref false in
+let stack_overflow_retries = ref 5
 
-  let ask input =
-    if !needs_restart then
-      failwith "This solver does not support incremental queries"
-    else
-      let response = solver input in
-      needs_restart := true;
-      response in
-
-  let refresh_restart () =
-    needs_restart := false in
-
-  { FStar_SMTEncoding_Z3.ask = ask;
-    FStar_SMTEncoding_Z3.refresh = refresh_restart;
-    FStar_SMTEncoding_Z3.restart = refresh_restart }
-
-let rec restart_on_overflow n f x =
-  try f x (* FIXME this isn't enough: F* catches it (on single-file examples). *)
-  with Stack_overflow when n > 0 ->
-    FStar_Util.print1 "Stack overflow: restarting (%s)" (string_of_int n);
-    restart_on_overflow (n - 1) f x
+let restart_on_overflow f x =
+  let rec restart_on_overflow' n f x =
+    try f x
+    with Stack_overflow when n > 0 ->
+      FStar_Util.print1 "Stack overflow: restarting (%s)\n" (string_of_int n);
+      restart_on_overflow' (n - 1) f x
+  in restart_on_overflow' !stack_overflow_retries f x
 
 exception Exit of int
 
 let main () =
   FStar_Main.setup_hooks ();
+  FStar_SMTEncoding_Z3.set_z3_options "";
   FStar_Main.go ();
   FStar_Main.cleanup ();
   0
@@ -63,7 +51,8 @@ let _ =
        val quit = (* Called by the ‘Sys.exit’ handler in JSOO. *)
          Js.wrap_callback (fun (exitCode: int) -> raise (Exit exitCode))
 
-       val chdir = Js.wrap_callback Sys.chdir
+       val chdir =
+         Js.wrap_callback Sys.chdir
 
        val writeFile =
          Js.wrap_callback (fun fname fcontents ->
@@ -75,11 +64,16 @@ let _ =
                Sys_js.create_file ~name ~content)
 
        val setSMTSolver =
-         Js.wrap_callback (fun solver ->
-             let typesafe_solver (input: string) =
+         Js.wrap_callback (fun ask reset ->
+             let typesafe_ask (input: string) =
                let args = [| (Js.Unsafe.inject (Js.string input)) |] in
-               Js.to_string (Js.Unsafe.fun_call solver args) in
-             FStar_SMTEncoding_Z3.set_bg_z3_proc (wrap_simple_solver typesafe_solver))
+               Js.to_string (Js.Unsafe.fun_call ask args) in
+             let typesafe_reset () =
+               ignore (Js.Unsafe.fun_call reset [| |]) in
+             FStar_SMTEncoding_Z3.set_bg_z3_proc
+               { FStar_SMTEncoding_Z3.ask = typesafe_ask;
+                 FStar_SMTEncoding_Z3.refresh = typesafe_reset;
+                 FStar_SMTEncoding_Z3.restart = typesafe_reset })
 
        val setChannelFlushers =
          Js.wrap_callback (fun fstdout fstderr ->
@@ -88,19 +82,23 @@ let _ =
              Sys_js.set_channel_flusher stderr (wrap fstderr);
              Sys_js.set_channel_flusher stdout (wrap fstdout))
 
+       val setStackOverflowRetries =
+         Js.wrap_callback (fun (n: int) -> stack_overflow_retries := n)
+
        val callMain =
          Js.wrap_callback (fun () ->
-             restart_on_overflow 5 (fun () ->
+             restart_on_overflow (fun () ->
                  try main ()
                  with (* ‘Exit’ is raised by ‘quit’ above. *)
                  | Exit exitCode -> exitCode
                  | e when e <> Stack_overflow -> FStar_Main.handle_error e; 1) ())
 
        val callMainUnsafe =
-         (** This disables all exception catching (to get better Javascript backtraces) *)
+         (** Run main with all exception catching disabled (to get better Javascript backtraces). **)
          Js.wrap_callback main
 
        val registerLazyFS =
+         (** Register a lazy file system (this is a JS function). **)
          Js.Unsafe.js_expr "registerLazyFS"
 
        val repl =
@@ -116,6 +114,6 @@ let _ =
 
             val evalStr =
               Js.wrap_callback (fun (query: Js.js_string Js.t) ->
-                  Js.string (restart_on_overflow 5 repl_eval_str (Js.to_string query)))
+                  Js.string (restart_on_overflow repl_eval_str (Js.to_string query)))
           end)
      end)
