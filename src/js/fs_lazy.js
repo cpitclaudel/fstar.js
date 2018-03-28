@@ -1,5 +1,5 @@
 /* global MlFile caml_raise_sys_error caml_blit_string caml_raise_no_such_file
-   caml_string_of_array jsoo_mount_point joo_global_object */
+   caml_string_of_array jsoo_mount_point */
 
 /// Lazy File
 
@@ -45,26 +45,13 @@ LazyFile.prototype.constructor = LazyFile;
 
 /// Lazy FS
 
-// Provides: fetchFileSync
-function fetchFileSync(url, fullname) {
-    // We return a pure (data-only) record; this matters because the same data
-    // can be reused by multiple consecutive instantiations of FStar_JSOO.
-    var xhr = new XMLHttpRequest();
-    xhr.responseType = 'arraybuffer';
-    xhr.open("GET", url, false);
-    xhr.send(null);
-    return (xhr.status == 200 ?
-            { fullname: fullname, bytes: new joo_global_object.Uint8Array(xhr.response) }
-            : null);
-}
-
 //Provides: LazyFSDevice
-//Requires: LazyFile, fetchFileSync, caml_raise_sys_error, caml_raise_no_such_file
-function LazyFSDevice(index, files, fs_root, url_prefix) {
+//Requires: LazyFile, caml_raise_sys_error, caml_raise_no_such_file
+function LazyFSDevice(index, files, fs_root, resolver) {
     this.files = files;
     this.index = index;
     this.fs_root = fs_root;
-    this.url_prefix = url_prefix;
+    this.resolver = resolver;
 }
 
 LazyFSDevice.prototype.kind = function(fname) {
@@ -81,15 +68,11 @@ LazyFSDevice.prototype.fullName = function(fname) {
     return this.fs_root + fname;
 };
 
-LazyFSDevice.prototype.fullURL = function(fname) {
-    return this.url_prefix + fname;
-};
-
-LazyFSDevice.prototype.readFile = function(fname) {
+LazyFSDevice.prototype.readBytes = function(fname) {
     if (this.kind(fname) != "file")
         return null;
     if (!this.files.hasOwnProperty(fname))
-        this.files[fname] = fetchFileSync(this.fullURL(fname), this.fullName(fname));
+        this.files[fname] = this.resolver(fname);
     return this.files[fname];
 };
 
@@ -124,11 +107,12 @@ LazyFSDevice.prototype.open = function(fname, flags) {
     if (flags.text && flags.binary)
         caml_raise_sys_error("Cannot open " + fname + " as both text and binary");
 
-    var file = this.readFile(fname);
-    if (file == null)
-        caml_raise_no_such_file(this.fullName(fname));
+    var bytes = this.readBytes(fname);
+    var fullname = this.fullName(fname);
+    if (bytes == null)
+        caml_raise_no_such_file(fullname);
 
-    return new LazyFile(file.fullname, file.bytes);
+    return new LazyFile(fullname, bytes);
 };
 
 LazyFSDevice.prototype.constructor = LazyFSDevice;
@@ -137,7 +121,7 @@ LazyFSDevice.prototype.constructor = LazyFSDevice;
 
 //Provides: registerLazyFS
 //Requires: LazyFile, LazyFSDevice, jsoo_mount_point
-function registerLazyFS(index, files, fs_root, url_prefix) {
-    var device = new LazyFSDevice(index, files, fs_root, url_prefix);
+function registerLazyFS(index, files, fs_root, resolver) {
+    var device = new LazyFSDevice(index, files, fs_root, resolver);
     jsoo_mount_point.push({path: fs_root, device: device});
 }
