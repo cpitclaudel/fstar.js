@@ -32,6 +32,9 @@ html {
 .fstar-snippet > .CodeMirror,
 .fstar-standalone-editor > .editor > .CodeMirror,
 .fstar-error, .fstar-warning, .fstar-info,
+.fstar-ps-location,
+.fstar-ps-goal-conclusion,
+.fstar-ps-goal-hyp-type,
 .fstar-progress-echo-area {
     font-family: "Fira Code", "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
 }
@@ -92,7 +95,7 @@ html {
     display: none;
 }
 
-.fstar-error-panel {
+.fstar-error-panel, .fstar-proof-state-panel {
     border: 1px solid grey;
     display: none;
     font-size: 0.9rem;
@@ -124,6 +127,7 @@ html {
 }
 
 .fstar-highlighted-marker {
+    text-decoration-line: underline; /* Needed for proof-state locations */
     text-decoration-style: double;
 }
 
@@ -210,3 +214,100 @@ html {
 .fstar-info > .fstar-error-level {
     color: #73d216;
 }
+
+.fstar-ps-label {
+  font-variant: small-caps;
+  font-weight: 600;
+}
+
+.fstar-ps-timestamp {
+  display: block;
+  font-size: 0.75rem;
+}
+
+.fstar-ps-goal {
+  display: inline-block;
+  margin-top: 0.65rem;
+  padding: 0 2rem;
+}
+
+.fstar-ps-location {
+    display: block;
+    font-size: 0.75rem;
+}
+
+.fstar-ps-goal-hyps {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  padding: 0 0.5rem;
+}
+
+.fstar-ps-goal-hyp {
+    display: inline-table;
+    margin: 0 1rem;
+}
+
+.fstar-ps-goal-hyp,
+.fstar-ps-goal-conclusion-type {
+  padding: 0.25rem 0.5rem;
+}
+
+.fstar-ps-goal-hyp:hover,
+.fstar-ps-goal-conclusion-type:hover {
+    background-color: #eeeeec;
+    border-radius: 0.25rem;
+}
+
+.fstar-ps-goal-hyp-names,
+.fstar-ps-goal-hyp-type {
+  display: table-cell;
+}
+
+.fstar-ps-goal-hyp-name {
+  font-style: italic;
+  font-weight: bold;
+  color: #b35000;
+}
+
+.fstar-ps-goal-hyp-names:after {
+  content: ":";
+  font-style: normal;
+  font-weight: normal;
+  padding: 0 0.35rem 0 0.2rem;
+}
+
+.fstar-ps-goal-line {
+  align-items: center;
+  display: flex;
+}
+
+.fstar-ps-goal-line hr {
+  border: solid black;
+  border-width: 1px 0 0 0;
+  display: inline-block;
+  flex-grow: 1;
+  margin: 0;
+}
+
+.fstar-ps-goal-label {
+  font-size: 0.6rem;
+  font-variant: small-caps;
+  padding: 0.2rem;
+  margin: -0.5rem 0;
+}
+
+.fstar-ps-goal-conclusion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fstar-ps-goal-conclusion-witness {
+  font-size: 0.5rem;
+  opacity: 0.5;
+}
+
+/* Local Variables: */
+/* css-indent-offset: 2 */
+/* End: */
