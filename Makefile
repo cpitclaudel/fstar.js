@@ -80,13 +80,19 @@ STDLIB_FILES_SOURCES_TO_CHECK=$(filter-out $(STDLIB_FILES_EXCLUDED),$(STDLIB_FIL
 STDLIB_FILES_CHECKED=$(STDLIB_FILES_SOURCES_TO_CHECK:=.checked)
 STDLIB_FILES_ALL=$(STDLIB_FILES_SOURCES) $(STDLIB_FILES_CHECKED)
 
-serve:
-	mkdir -p web/fstar.js/
-	cp vendor/z3.js/* lib/* $(JS_BUILD_DIR)/fstar.*.js web/fstar.js/
-	mkdir -p web/fstar.js/fs/ web/fstar.js/fs/ulib/
-	@+$(MAKE) -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(STDLIB_FILES_CHECKED:$(STDLIB)/%=%)
-	@cp $(STDLIB_FILES_ALL) web/fstar.js/fs/ulib/
+web-dirs:
+	mkdir -p web/fstar.js/ web/fstar.js/fs/ web/fstar.js/fs/ulib/
+
+gen-index: $(STDLIB_FILES_ALL) | web-dirs
+	@+$(MAKE) --quiet -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(STDLIB_FILES_CHECKED:$(STDLIB)/%=%)
 	etc/jsoo_lazy_fs_index.py web/fstar.js/fs/ > web/fstar.js/fs/index.json
+
+gen-depcache: $(OCAML_BUILD_DIR)/depcache.native $(STDLIB_FILES_SOURCES_TO_CHECK) | web-dirs
+	build/ocaml/depcache.native $(FSTAR_ROOT) /fstar/ulib/ $(STDLIB_FILES_SOURCES_TO_CHECK:$(STDLIB)/%=%) > web/fstar.js/fs/depcache
+
+serve: gen-index gen-depcache | web-dirs
+	cp vendor/z3.js/*.* lib/* $(JS_BUILD_DIR)/fstar.*.js web/fstar.js/
+	@cp $(STDLIB_FILES_ALL) web/fstar.js/fs/ulib/
 	python3 -m http.server
 
 serve-%:

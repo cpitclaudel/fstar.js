@@ -38,6 +38,8 @@ let restart_on_overflow f x =
 
 exception Exit of int
 
+external ml_string_of_uint8Array : Js_of_ocaml.Typed_array.uint8Array Js.t -> string = "caml_string_of_array"
+
 let main () =
   FStar_Main.setup_hooks ();
   FStar_SMTEncoding_Z3.set_z3_options "";
@@ -84,6 +86,12 @@ let _ =
 
        val setStackOverflowRetries =
          Js.wrap_callback (fun (n: int) -> stack_overflow_retries := n)
+
+       val setCollectOneCache =
+         Js.wrap_callback (fun js_bytestr ->
+             let bs = ml_string_of_uint8Array js_bytestr in
+             FStar_Parser_Dep.set_collect_one_cache
+               (FStar_Util.smap_of_list (Marshal.from_bytes bs 0)))
 
        val callMain =
          Js.wrap_callback (fun () ->
