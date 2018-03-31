@@ -271,7 +271,12 @@ html {
   font-weight: bold;
 }
 
-.fstar-ps-goal-hyp-names:after {
+.fstar-ps-goal-hyp-name + .fstar-ps-goal-hyp-name::before {
+    content: ",";
+    margin-right: 0.25rem;
+}
+
+.fstar-ps-goal-hyp-names::after {
   content: ":";
   font-style: normal;
   font-weight: normal;
