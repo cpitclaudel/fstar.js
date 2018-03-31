@@ -314,6 +314,13 @@ html {
   opacity: 0.5;
 }
 
+.fstar-literate-document::after {
+  content: " ";
+  display: block;
+  height: 1.5rem;
+  visibility: hidden;
+}
+
 /* Local Variables: */
 /* css-indent-offset: 2 */
 /* End: */
