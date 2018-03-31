@@ -85,28 +85,37 @@ STDLIB_FILES_SOURCES_TO_CHECK=$(filter-out $(STDLIB_FILES_EXCLUDED),$(STDLIB_FIL
 STDLIB_FILES_CHECKED=$(STDLIB_FILES_SOURCES_TO_CHECK:=.checked)
 STDLIB_FILES_ALL=$(STDLIB_FILES_SOURCES) $(STDLIB_FILES_CHECKED)
 
-web-dirs:
-	mkdir -p web/fstar.js/ web/fstar.js/fs/ web/fstar.js/fs/ulib/
+dist-dirs:
+	mkdir -p dist/ dist/fs/ dist/fs/ulib/
 
-gen-index: $(STDLIB_FILES_ALL) | web-dirs
+gen-index: $(STDLIB_FILES_ALL) | dist-dirs
+	@echo $(MAKE) --quiet -C $(FSTAR_ROOT)/ulib -f Makefile.verify '[...]'
 	@+$(MAKE) --quiet -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(STDLIB_FILES_CHECKED:$(STDLIB)/%=%)
-	etc/jsoo_lazy_fs_index.py web/fstar.js/fs/ > web/fstar.js/fs/index.json
+	etc/jsoo_lazy_fs_index.py dist/fs/ > dist/fs/index.json
 
-gen-depcache: $(OCAML_BUILD_DIR)/depcache.native $(STDLIB_FILES_SOURCES_TO_CHECK) | web-dirs
-	build/ocaml/depcache.native $(FSTAR_ROOT) /fstar/ulib/ $(STDLIB_FILES_SOURCES_TO_CHECK:$(STDLIB)/%=%) > web/fstar.js/fs/depcache
+gen-depcache: $(OCAML_BUILD_DIR)/depcache.native $(STDLIB_FILES_SOURCES_TO_CHECK) | dist-dirs
+	@echo 'depcache [...]'
+	@build/ocaml/depcache.native $(FSTAR_ROOT) /fstar/ulib/ $(STDLIB_FILES_SOURCES_TO_CHECK:$(STDLIB)/%=%) > dist/fs/depcache
 
-serve: gen-index gen-depcache | web-dirs
-	cp vendor/z3.js/*.* lib/* $(JS_BUILD_DIR)/fstar.*.js web/fstar.js/
-	@cp $(STDLIB_FILES_ALL) web/fstar.js/fs/ulib/
+dist: gen-index gen-depcache | dist-dirs
+	cp vendor/z3.js/z3smt2w.js vendor/z3.js/z3smt2w.wasm lib/*.js lib/*.css $(JS_BUILD_DIR)/fstar.core.js dist/
+	@cp $(STDLIB_FILES_ALL) dist/fs/ulib/
+
+serve: dist
+	test -L web/fstar.js || ln -s ../dist web/fstar.js
 	python3 -m http.server
 
 serve-%:
 	cp $(JS_BUILD_DIR)/fstar.core.$*.js $(JS_BUILD_DIR)/fstar.core.js
 	+$(MAKE) serve
 
+release: dist
+	tar --create --gzip --file fstar.js.tar.gz --transform 's|^dist|fstar.js|' dist
+
 clean-ocaml:
 	rm -rf $(OCAML_BUILD_DIR)
 
 clean:
-	rm -rf build web/fstar.js
+	rm -rf build dist
+	unlink web/fstar.js
 	+$(MAKE) -C $(FSTAR_ROOT) clean
