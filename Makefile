@@ -53,9 +53,14 @@ $(OCAML_BUILD_DIR)/%.native: $(OCAML_ROOT)/%.ml | ulib-32 build-dirs
 $(OCAML_BUILD_DIR)/fstar.core.%: $(OCAML_BUILD_DIR)/FStar_JS_v1.%
 	cp "$<" "$@"
 
-## JSOO options.  Compiling in opt mode with --disable inline reduces stack overflows
+## JSOO options.
+# The code produced by JSOO tends to stack-overflow quite a bit.  Out of the
+# box, ‘--disable inline’ makes things a bit better, and so does ‘--opt 3’,
+# likely because these options make stack frames smaller.  But even that is not
+# enough: what actually helps is disabling JSOO's trampolining optimization that
+# doesn't trampoline until 50 stack-frames deep, and re-enabling inlining.
 JS_LIBS=src/js/BigInteger.js src/js/zarith.js src/js/fs_lazy.js src/js/overrides.js +nat.js +toplevel.js
-JSOO_OPTS=--wrap-with-fun=JSOO_FStar --extern-fs $(JS_LIBS) --disable inline --debug times
+JSOO_OPTS=--wrap-with-fun=JSOO_FStar --extern-fs $(JS_LIBS) --debug times
 JSOO_LIGHT_DEBUG_OPTS=--pretty --source-map
 JSOO_HEAVY_DEBUG_OPTS=--debug-info --disable execwrap # --debug-info and --disable inline make some things harder to read
 

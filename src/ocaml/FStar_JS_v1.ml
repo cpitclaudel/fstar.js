@@ -26,15 +26,15 @@ let repl_eval_str query =
    | FStar_Util.Inr _exitCode -> (* FIXME *) ());
   js_str
 
-let stack_overflow_retries = ref 5
+(* let stack_overflow_retries = ref 5 *)
 
-let restart_on_overflow f x =
-  let rec restart_on_overflow' n f x =
-    try f x
-    with Stack_overflow when n > 0 ->
-      FStar_Util.print1 "Stack overflow: restarting (%s)\n" (string_of_int n);
-      restart_on_overflow' (n - 1) f x
-  in restart_on_overflow' !stack_overflow_retries f x
+(* let restart_on_overflow f x =
+ *   let rec restart_on_overflow' n f x =
+ *     try f x
+ *     with Stack_overflow when n > 0 ->
+ *       FStar_Util.print1 "Stack overflow: restarting (%s)\n" (string_of_int n);
+ *       restart_on_overflow' (n - 1) f x
+ *   in restart_on_overflow' !stack_overflow_retries f x *)
 
 exception Exit of int
 
@@ -84,8 +84,8 @@ let _ =
              Sys_js.set_channel_flusher stderr (wrap fstderr);
              Sys_js.set_channel_flusher stdout (wrap fstdout))
 
-       val setStackOverflowRetries =
-         Js.wrap_callback (fun (n: int) -> stack_overflow_retries := n)
+       (* val setStackOverflowRetries =
+        *   Js.wrap_callback (fun (n: int) -> stack_overflow_retries := n) *)
 
        val setCollectOneCache =
          Js.wrap_callback (fun js_bytestr ->
@@ -95,11 +95,11 @@ let _ =
 
        val callMain =
          Js.wrap_callback (fun () ->
-             restart_on_overflow (fun () ->
-                 try main ()
-                 with (* ‘Exit’ is raised by ‘quit’ above. *)
-                 | Exit exitCode -> exitCode
-                 | e when e <> Stack_overflow -> FStar_Main.handle_error e; 1) ())
+             try (* ‘Exit’ is raised by ‘quit’ above. *)
+               try main ()
+               with | Exit exitCode -> exitCode
+                    | e -> FStar_Main.handle_error e; 1
+             with Exit exitCode -> exitCode)
 
        val callMainUnsafe =
          (** Run main with all exception catching disabled (to get better Javascript backtraces). **)
@@ -122,6 +122,6 @@ let _ =
 
             val evalStr =
               Js.wrap_callback (fun (query: Js.js_string Js.t) ->
-                  Js.string (restart_on_overflow repl_eval_str (Js.to_string query)))
+                  Js.string (repl_eval_str (Js.to_string query)))
           end)
      end)
