@@ -60,10 +60,11 @@ let _ =
          Js.wrap_callback (fun fname fcontents ->
              let name = Js.to_string fname in
              let content = Js.to_string fcontents in
+             (* ‘open_out’ is broken in js_of_ocaml
+                https://github.com/ocsigen/js_of_ocaml/issues/656 *)
              if Sys.file_exists name then
-               Sys_js.update_file ~name ~content
-             else
-               Sys_js.create_file ~name ~content)
+               Sys.remove name;
+             Sys_js.create_file ~name ~content)
 
        val setSMTSolver =
          Js.wrap_callback (fun ask reset ->
