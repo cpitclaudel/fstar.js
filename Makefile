@@ -88,7 +88,7 @@ STDLIB_FILES_ALL=$(STDLIB_FILES_SOURCES) $(STDLIB_FILES_CHECKED)
 dist-dirs:
 	mkdir -p dist/ dist/fs/ dist/fs/ulib/
 
-gen-index: $(STDLIB_FILES_ALL) | dist-dirs
+gen-index: $(STDLIB_FILES_SOURCES) | dist-dirs
 	@echo $(MAKE) --quiet -C $(FSTAR_ROOT)/ulib -f Makefile.verify '[...]'
 	@+$(MAKE) --quiet -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(STDLIB_FILES_CHECKED:$(STDLIB)/%=%)
 	etc/jsoo_lazy_fs_index.py dist/fs/ > dist/fs/index.json
