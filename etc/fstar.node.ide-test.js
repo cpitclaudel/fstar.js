@@ -1,19 +1,8 @@
-/* global require global FStar */
+#!/usr/bin/env nodejs
+//
+// Feed source code fragments to F*.js and print prettified output.
 
-if (typeof(require) !== "undefined") {
-    process.chdir("../lib/");
-    global.JSOO_FStar = require("../build/js/fstar.core.js");
-    global.JSOO_FStar_Stdlib = require("../build/js/fstar.stdlib.js");
-    global.underscore = require("../vendor/underscore-min.js");
-    global.Z3 = require("../lib/z3-wasm.core.js");
-    require("../lib/fstar.global-object.js");
-    require("../lib/fstar.driver.js");
-    require("../lib/fstar.ide.utils.js");
-    require("../lib/fstar.smtdriver.js");
-}
-
-var fname = "stlc.fst";
-var args = ["--z3refresh", "--fstar_home", "/fstar"]; // "--lax", "--admit_smt_queries", "true",
+var FStar = require("./fstar.node.js");
 
 var fblocks = [
     "module STLC",
@@ -52,17 +41,23 @@ var fblocks = [
     "val eval'' : e:exp{Some? (typing empty e)} ->\n            Dv (v:exp{is_value v && typing empty v = typing empty e})\nlet rec eval'' e =\n  let Some t = typing empty e in\n  match e with\n  | EApp e1 e2 ->\n     (let EAbs x _ e' = eval' e1 in\n      let v = eval' e2 in\n      substitution_preserves_typing x e' v empty;\n      eval'' (subst x v e'))\n  | EAbs _ _ _\n  | ETrue\n  | EFalse     -> e\n  | EIf e1 e2 e3 ->\n     (match eval'' e1 with\n      | ETrue  -> eval'' e2\n      | EFalse -> eval'' e3)"
 ];
 
-function onMessage(message) {
-    console.log("message:", message);
-}
+var fname = "/static/stlc.fst";
+var fullText = fblocks.join("\n\n");
+var args = ["--fstar_home", "/fstar"];
+var callbacks = { message: console.log,
+                  progress: function() {} };
+var ide = new FStar.Driver.IDE(fname, fullText, args, callbacks);
 
-var ide = new FStar.Driver.IDE(fname, fblocks.join("\n\n"), args, onMessage);
-
-FStar.SMTDriver.CLI.initAsync(function() {
-    setTimeout(function () {
-        fblocks.forEach(function(block) {
-            console.log(">>>", block.replace(/[\r\n]+$/, ""));
-            console.log(ide.evalSync(FStar.IDE.Utils.mkPush("0", "full", block, 1, 0)));
+FStar.Driver.initSMT({
+    ready: function() {
+        setImmediate(function () {
+            fblocks.forEach(function(block, idx) {
+                var qid = idx.toString();
+                var query = FStar.IDE.Utils.mkPush(qid, "full", block, 1, 0);
+                var disp = block.replace(/[\r\n]+$/, '').replace(/[\r\n]/g, "$&... ");
+                console.log("\n>>>", disp);
+                console.log(ide.evalSync(query));
+            });
         });
-    }, 0);
-});
+    },
+    progress: function() {} });

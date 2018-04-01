@@ -6,13 +6,22 @@ import argparse
 def parse_arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("jsoo_file", help="JSOO file to edit")
-    parser.add_argument("jsoo_fun_name", help="Name of the JSOO object (--wrap-with-fun=...).")
+    parser.add_argument("jsoo_fun_name", help="Name of the JSOO function (--wrap-with-fun=...).")
     return parser.parse_args()
 
+# The JSOO function returns a fresh object only in the browser.  On node, it
+# adds everything to module.exports.  The code below does its best to paper over
+# that difference.
 TEMPLATE = """
 /* global module */
 if (typeof(module) !== "undefined" && module.hasOwnProperty("exports")) {
-    module.exports = [[fun-name]];
+    var jsoo_fn = function(obj) {
+        module.exports = {}
+        [[fun-name]](obj);
+        Object.assign(obj, module.exports);
+        module.exports = jsoo_fn;
+    };
+    module.exports = jsoo_fn;
 }
 """
 
