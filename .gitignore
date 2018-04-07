@@ -1,4 +1,5 @@
 attic.*
+node_modules/
 /todo.org
 
 /build/
