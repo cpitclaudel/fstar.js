@@ -1,155 +1,169 @@
-"use strict";
-/* global console FStar JSOO_FStar */
+interface JSOOFStarOptions {
+    console?: typeof console;
+    Object?: typeof Object;
+    Array?: typeof Array;
+    Uint8Array?: typeof Uint8Array;
+    Buffer?: any;
+    Error?: typeof Error;
+    RangeError?: typeof RangeError;
+    InternalError?: any;
+    fstar_args?: string[];
+}
 
-FStar.Driver = FStar.Driver || {};
+interface JSOOFStarEngine extends JSOOFStarOptions {
+    setCollectOneCache(buf: ArrayBuffer): void;
+    registerLazyFS(index: object, files: object, root: string, resolver: (fname: string) => Uint8Array): void;
+    writeFile(fname: string, fcontents: string): void;
+    setSMTSolver(ask: (query: string) => string, refresh: () => void): void;
+    setChannelFlushers(stdout: (s: string) => void, stderr: (s: string) => void): void;
+    callMain(): void;
+    callMainUnsafe(): void;
+    repl: {
+        init(fname: string, onMessage: (msg: string) => void): void;
+        evalStr(query: string): string;
+    };
+}
 
-(function () {
-    var Driver = FStar.Driver;
-    var debug = FStar.WorkerUtils.debug;
+declare const Buffer: any;
+declare const InternalError: any;
+declare const JSOO_FStar: (opts: JSOOFStarOptions) => void;
+
+namespace FStar.Driver {
+    import Utils = FStar.WorkerUtils;
+    const debug = Utils.debug;
 
     /// JSOO Constructors
 
     // Prepare a minimal global object for js_of_ocaml.
-    Driver.freshJsooGlobalObject = function() {
-        var obj = { console: console,
-                    Array: Array,
-                    Uint8Array: Uint8Array,
-                    Object: Object,
-                    Error: Error };
-        if (typeof(Buffer) !== "undefined")
-            obj.Buffer = Buffer; /* global RangeError */
-        if (typeof(RangeError) !== "undefined")
-            obj.RangeError = RangeError; /* global RangeError */
-        if (typeof(Uint8Array) !== "undefined")
-            obj.Uint8Array = Uint8Array; /* global Uint8Array */
-        if (typeof(InternalError) !== "undefined")
-            obj.InternalError = InternalError; /* global InternalError */
-        return obj;
-    };
+    function freshJsooGlobalObject(fstar_args: string[]) {
+        return { console,
+                 Object, Array, Uint8Array, Buffer,
+                 Error, RangeError, InternalError,
+                 fstar_args };
+    }
 
-    var qid = 0;
-    function askSolver(query) {
+    let qid = 0;
+    export function askSolver(query: string): string {
         debug(`Start of query #${qid++}`);
-        var ret = FStar.SMTDriver.CLI.ask(query);
+        const ret = FStar.SMTDriver.CLI.ask(query);
         debug(`End of query #${qid}`);
         return ret.response;
     }
 
-    var fetchSync = FStar.WorkerUtils.fetchSync;
-
-    function urlSyncResolver(url_prefix, progress_callback) {
-        return function(fname) {
-            progress_callback(`Fetching ${fname}…`);
-            var bytes = new Uint8Array(fetchSync(url_prefix + fname, 'arraybuffer'));
-            progress_callback(null);
+    function urlSyncResolver(urlPrefix: string, progressCallback: (msg: string | null) => void) {
+        return (fname: string) => {
+            progressCallback(`Fetching ${fname}…`);
+            const bytes = new Uint8Array(Utils.fetchSync(urlPrefix + fname, 'arraybuffer'));
+            progressCallback(null);
             return bytes;
         };
     }
 
     // This lazy file system persists across calls to Driver.freshFStar
-    var lazyFS = Driver.lazyFS = { index: fetchSync("fs/index.json", 'json'),
-                                   depcache: new Uint8Array(fetchSync("fs/depcache", 'arraybuffer')),
-                                   files: {},
-                                   fs_root: "/fstar/",
-                                   url_prefix: "fs/" };
+    const lazyFS = { index: Utils.fetchSync("fs/index.json", 'json'),
+                     depcache: new Uint8Array(Utils.fetchSync("fs/depcache", 'arraybuffer')),
+                     files: {},
+                     fs_root: "/fstar/",
+                     urlPrefix: "fs/" };
 
-    // Start a new instance of F* with arguments ‘args’.  ‘callbacks.progress’
-    // is called (with one argument, a string) when we make some progress
-    // downloading or verifying files.
-    Driver.freshFStar = function(args, callbacks) {
+    function initFStarInPlace(engine: JSOOFStarOptions): JSOOFStarEngine {
+        JSOO_FStar(engine);
+        return (engine as JSOOFStarEngine);
+    }
+
+    // Start a new instance of F* with arguments ‘args’.
+    export function freshFStar(args: string[], callbacks: { progress: (msg: string | null) => void }) {
         debug("Creating a new F* instance with arguments", args);
-        var fstar = Driver.freshJsooGlobalObject();
-        fstar.fstar_args = args;
-        JSOO_FStar(fstar);
-        fstar.setCollectOneCache(lazyFS.depcache);
-        var resolver = urlSyncResolver(lazyFS.url_prefix, callbacks.progress);
-        fstar.registerLazyFS(lazyFS.index, lazyFS.files, lazyFS.fs_root, resolver);
-        fstar.setSMTSolver(askSolver, FStar.SMTDriver.CLI.refresh);
-        return fstar;
-    };
+        const engine = initFStarInPlace (freshJsooGlobalObject(args));
+        engine.setCollectOneCache(lazyFS.depcache);
+        const resolver = urlSyncResolver(lazyFS.urlPrefix, callbacks.progress);
+        engine.registerLazyFS(lazyFS.index, lazyFS.files, lazyFS.fs_root, resolver);
+        engine.setSMTSolver(askSolver, FStar.SMTDriver.CLI.refresh);
+        return engine;
+    }
 
     // ON UPDATE: Compare against SMTEncoding.Z3.{ini_params,z3_options}
-    var Z3_OPTIONS = {"model": "true",
-                      "auto_config": "false",
-                      // "unsat_cores": "true",
-                      "smt.random_seed": 0,
-                      "smt.case_split": "3",
-                      "smt.relevancy": "2",
-                      "smt.mbqi": "false" };
+    const Z3_OPTIONS = {"model": "true",
+                        "auto_config": "false",
+                        // "unsat_cores": "true",
+                        "smt.random_seed": "0",
+                        "smt.case_split": "3",
+                        "smt.relevancy": "2",
+                        "smt.mbqi": "false" };
 
     // Initialize the SMT solver
-    Driver.initSMT = function(callbacks) {
+    export function initSMT(callbacks: FStar.SMTDriver.CLI.SMTCLICallbacks) {
         FStar.SMTDriver.CLI.initAsync(Z3_OPTIONS, callbacks);
-    };
+    }
 
     /// FStar.Driver.IDE
+
+    export interface IDECallbacks {
+        progress(msg: string | null): void;
+        message(msg: string): void;
+    }
 
     // Initialize a new F* REPL in --ide mode, working on file ‘fname’ with
     // arguments ‘args’.  ‘callbacks.message’ is called (with one argument, a
     // JSON message) every time F* sends an out-of-band message;
     // ‘callbacks.progress’ is called (with one argument, a string) when we make
     // some progress downloading or verifying files.
-    var IDE = FStar.Driver.IDE = function(fname, fcontents, args, callbacks) {
-        var IDE_FLAG = "--ide";
-        if (!args.includes(IDE_FLAG)) {
-            args = args.concat([IDE_FLAG]);
+    export class IDE {
+        private args: string[];
+        private fname: string;
+        private engine: JSOOFStarEngine;
+
+        constructor(fname: string, fcontents: string | null, args: string[],
+                    callbacks: IDECallbacks) {
+            this.fname = fname;
+            const IDE_FLAG = "--ide";
+            this.args = args.concat(args.indexOf(IDE_FLAG) < 0 ? [IDE_FLAG] : []);
+            this.engine = Driver.freshFStar(this.args.concat([fname]), callbacks);
+            (fcontents !== null) && this.engine.writeFile(fname, fcontents); // FIXME updateFile
+
+            this.engine.repl.init(fname, (msg: string) => {
+                callbacks.message(JSON.parse(msg));
+            });
         }
 
-        this.args = args;
-        this.fname = fname;
-        this.fstar = Driver.freshFStar(args.concat([fname]), callbacks);
-        (fcontents !== null) && this.fstar.writeFile(fname, fcontents);
+        // Run ‘query’ synchronously.  This is mostly for debugging purposes,
+        // since F*'s --ide mode might become asynchronous some day.
+        public evalSync(query: string): string {
+            return JSON.parse(this.engine.repl.evalStr(JSON.stringify(query)));
+        }
 
-        this.fstar.repl.init(fname, function (messageStr) {
-            callbacks.message(JSON.parse(messageStr));
-        });
-    };
+        // Run ‘query’, passing the results to ‘callback’.  This currently calls
+        // ‘callback’ immediately, but clients shouldn't rely on this.
+        public eval(query: string, callback: (response: string) => void) {
+            callback(this.evalSync(query));
+        }
 
-    // Run ‘query’ synchronously.  This is mostly for debugging purposes,
-    // since F*'s --ide mode might become asynchronous some day.
-    IDE.prototype.evalSync = function(query) {
-        return JSON.parse(this.fstar.repl.evalStr(JSON.stringify(query)));
-    };
-
-    // Run ‘query’, passing the results to ‘callback’.  This currently calls
-    // ‘callback’ immediately, but clients shouldn't rely on this.
-    IDE.prototype.eval = function(query, callback) {
-        callback(this.evalSync(query));
-    };
-
-    // Set contents of ‘fname’ to ‘fcontents’.
-    IDE.prototype.updateFile = function(fcontents) {
-        this.fstar.writeFile(this.fname, fcontents);
-    };
-
-    /// Flusher
-
-    function Flusher(channel) {
-        var label = channel + ":";
-        var lines = this.lines = [];
-        this.write = function(line) {
-            console.log(label, line.replace(/[\r\n]+$/, ""));
-            lines.push(line);
-        };
+        // Set contents of ‘fname’ to ‘fcontents’.
+        public updateFile(fcontents: string) {
+            this.engine.writeFile(this.fname, fcontents);
+        }
     }
 
     /// FStar.Driver.CLI
 
-    Driver.CLI = Driver.CLI || {};
+    export namespace CLI {
+        export function verify(fname: string, fcontents: string | null, args: string[],
+                               stdout: Utils.Writer, stderr: Utils.Writer,
+                               catchExceptions: boolean) {
+            const callbacks = { progress: (_msg: any) => { /* ignore */ } };
+            const engine = Driver.freshFStar(args.concat([fname]), callbacks);
+            engine.setChannelFlushers((s: string) => stdout.write(s), (s: string) => stderr.write(s));
+            (fcontents !== null) && engine.writeFile(fname, fcontents);
+            return catchExceptions ? engine.callMain() : engine.callMainUnsafe();
+        }
 
-    Driver.CLI.verify = function(fname, fcontents, args, stdout, stderr, catchExceptions) {
-        var callbacks = { progress: function (_msg) { } };
-        var fstar = Driver.freshFStar(args.concat([fname]), callbacks);
-        fstar.setChannelFlushers(stdout, stderr);
-        (fcontents !== null) && fstar.writeFile(fname, fcontents);
-        return catchExceptions ? fstar.callMain() : fstar.callMainUnsafe();
-    };
-
-    Driver.CLI.verifySync = function(fname, fcontents, args, catchExceptions) {
-        var stdout = new Flusher("stdout"), stderr = new Flusher("stderr");
-        var retv = Driver.CLI.verify(fname, fcontents, args, stdout.write, stderr.write, catchExceptions);
-        return { exitCode: retv,
-                 stdout: stdout.lines,
-                 stderr: stderr.lines };
-    };
-})();
+        export function verifySync(fname: string, fcontents: string | null, args: string[],
+                                   catchExceptions: boolean) {
+            const stdout = new Utils.Flusher(), stderr = new Utils.Flusher();
+            const retv = Driver.CLI.verify(fname, fcontents, args, stdout, stderr, catchExceptions);
+            return { exitCode: retv,
+                     stdout: stdout.lines,
+                     stderr: stderr.lines };
+        }
+    }
+}

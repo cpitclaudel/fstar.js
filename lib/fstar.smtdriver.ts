@@ -1,6 +1,7 @@
 
 namespace FStar.SMTDriver {
-    const debug = FStar.WorkerUtils.debug;
+    import Utils = FStar.WorkerUtils;
+    const debug = Utils.debug;
 
     type cpointer = number;
     interface EmscriptenModule {
@@ -19,7 +20,7 @@ namespace FStar.SMTDriver {
     function fetchWasmBinaryAsync(url: string,
                                   onProgress: (msg: string) => void,
                                   onLoad: (buffer: ArrayBuffer) => void) {
-        FStar.WorkerUtils.fetchAsync(
+        Utils.fetchAsync(
             url, 'arraybuffer', (evt: ProgressEvent) => {
                 if (evt.lengthComputable) {
                     const percentLoaded: number = evt.loaded / evt.total * 100;
@@ -43,12 +44,8 @@ namespace FStar.SMTDriver {
         });
     }
 
-    export interface Writer {
-        write(msg: string): void;
-    }
-
     // Start a new instance of the SMT solver, redirecting IO to ‘stdout’ and ‘stderr’.
-    export function initEmscripten(stdout: Writer, stderr: Writer,
+    export function initEmscripten(stdout: Utils.Writer, stderr: Utils.Writer,
                                    onProgress: (msg: string) => void,
                                    then: (engine: EmscriptenModule) => void) {
         fetchWasmModuleAsync("z3smt2w.wasm", onProgress, (wasmModule) => {
@@ -67,29 +64,9 @@ namespace FStar.SMTDriver {
         });
     }
 
-    namespace CLI {
-        class Flusher implements Writer {
-            private lines: string[];
-
-            constructor() {
-                this.lines = [];
-            }
-
-            public write(line: string) {
-                this.lines.push(line);
-            }
-
-            public clear() {
-                this.lines = [];
-            }
-
-            public text(): string {
-                return this.lines.join("\n");
-            }
-        }
-
-        interface SMTCLICallbacks {
-            progress(msg: string): void;
+    export namespace CLI {
+        export interface SMTCLICallbacks { // FIXME move?
+            progress(msg: string | null): void;
             ready(): void;
         }
 
@@ -109,8 +86,8 @@ namespace FStar.SMTDriver {
         }
 
         class SMTCLI { // FIXME flatten hierarchy
-            private stdout: Flusher;
-            private stderr: Flusher;
+            private stdout: Utils.Flusher;
+            private stderr: Utils.Flusher;
 
             private smtParams: { [k: string]: string };
             private callbacks: SMTCLICallbacks;
@@ -119,8 +96,8 @@ namespace FStar.SMTDriver {
             private engine: SmtEngine | null;
 
             constructor(smtParams: { [k: string]: string }, callbacks: SMTCLICallbacks) {
-                this.stdout = new Flusher();
-                this.stderr = new Flusher();
+                this.stdout = new Utils.Flusher();
+                this.stderr = new Utils.Flusher();
 
                 this.solver = null;
                 this.engine = null;

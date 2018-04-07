@@ -7,6 +7,30 @@ namespace FStar.WorkerUtils {
         }
     }
 
+    export interface Writer {
+        write(msg: string): void;
+    }
+
+    export class Flusher implements Writer {
+        public lines: string[];
+
+        constructor() {
+            this.lines = [];
+        }
+
+        public write(line: string) {
+            this.lines.push(line);
+        }
+
+        public clear() {
+            this.lines = [];
+        }
+
+        public text(): string {
+            return this.lines.join("\n");
+        }
+    }
+
     export function postMessage(kind: string) {
         if (!(self instanceof DedicatedWorkerGlobalScope)) {
             throw new Error("This method only works in dedicated workers.");
