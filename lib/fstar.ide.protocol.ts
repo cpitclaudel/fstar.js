@@ -1,9 +1,21 @@
-"use strict";
-/* global */
-FStar.IDE = FStar.IDE || {};
-FStar.IDE.Protocol = {
-    Client: { INIT: "INIT", QUERY: "QUERY",
-              UPDATE_CONTENTS: "UPDATE_CONTENTS" },
-    Worker: { PROGRESS: "PROGRESS", READY: "READY",
-              MESSAGE: "MESSAGE", RESPONSE: "RESPONSE", EXIT: "EXIT" },
-    Status: { SUCCESS: "success", FAILURE: "failure", MESSAGE: "message" } };
+namespace FStar.IDE.Protocol {
+    enum Client {
+        INIT = "INIT",
+        QUERY = "QUERY",
+        UPDATE_CONTENTS = "UPDATE_CONTENTS"
+    }
+
+    enum Worker {
+        PROGRESS = "PROGRESS",
+        READY = "READY",
+        MESSAGE = "MESSAGE",
+        RESPONSE = "RESPONSE",
+        EXIT = "EXIT"
+    }
+
+    enum Status {
+        SUCCESS = "success",
+        FAILURE = "failure",
+        MESSAGE = "message"
+    }
+}
