@@ -46,7 +46,7 @@ namespace FStar.Driver {
     let qid = 0;
     export function askSolver(query: string): string {
         debug(`Start of query #${qid++}`);
-        const ret = FStar.SMTDriver.CLI.ask(query);
+        const ret = FStar.SMTDriver.ask(query);
         debug(`End of query #${qid}`);
         return ret.response;
     }
@@ -79,7 +79,7 @@ namespace FStar.Driver {
         engine.setCollectOneCache(lazyFS.depcache);
         const resolver = urlSyncResolver(lazyFS.urlPrefix, callbacks.progress);
         engine.registerLazyFS(lazyFS.index, lazyFS.files, lazyFS.fs_root, resolver);
-        engine.setSMTSolver(askSolver, FStar.SMTDriver.CLI.refresh);
+        engine.setSMTSolver(askSolver, FStar.SMTDriver.refresh);
         return engine;
     }
 
@@ -93,8 +93,8 @@ namespace FStar.Driver {
                         "smt.mbqi": "false" };
 
     // Initialize the SMT solver
-    export function initSMT(callbacks: FStar.SMTDriver.CLI.SMTCLICallbacks) {
-        FStar.SMTDriver.CLI.initAsync(Z3_OPTIONS, callbacks);
+    export function initSMT(callbacks: FStar.SMTDriver.SMTCLICallbacks) {
+        FStar.SMTDriver.initAsync(Z3_OPTIONS, callbacks);
     }
 
     /// FStar.Driver.IDE
