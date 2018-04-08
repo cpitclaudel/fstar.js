@@ -14,7 +14,6 @@
         "fstar.smtdriver.ts",
         "fstar.driver.ts",
 
-        "fstar.ide.utils.ts",
         "fstar.client.utils.ts",
 
         "fstar.cli.protocol.ts",

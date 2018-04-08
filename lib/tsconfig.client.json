@@ -16,7 +16,6 @@
         "fstar.cli.protocol.ts",
         "fstar.cli.client.ts",
 
-        "fstar.ide.utils.ts",
         "fstar.ide.protocol.ts",
         "fstar.ide.client.ts",
         "fstar.ide.literate.client.ts"

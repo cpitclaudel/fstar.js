@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <title>F*.js IDE demo</title>
     <link rel="stylesheet" href="./fstar.js/fstar.ide.css">
-    <link rel="stylesheet" href="./fstar.ide.literate.css">
     <link rel="stylesheet" href="./fstar.js/cm.tango.css">
     <link rel="stylesheet" href="./fira-code.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.css" integrity="sha256-I8NyGs4wjbMuBSUE40o55W6k6P7tu/7G28/JGUUYCIs=" crossorigin="anonymous" />
@@ -112,7 +111,7 @@ let rec subst x e e' =
 </div>
 
       <div id="footer">
-        Assembled by <a href="http://pit-claudel.fr/clement/">Clément Pit-Claudel</a> by compiling <!-- <a href="http://cvc4.cs.stanford.edu/web/">CVC4</a> v1.5-prerelease/209b088, <a href="https://gmplib.org/">GNU MP</a> v6.1.2 and <a href="http://antlr.org/">ANTLR's C runtime</a> v3.2 with <a href="http://kripken.github.io/emscripten-site/">Emscripten</a>, and -->F* 0.9.4.3/546237c with <a href="https://github.com/ocsigen/js_of_ocaml">js_of_ocaml</a>
+        Assembled by <a href="http://pit-claudel.fr/clement/">Clément Pit-Claudel</a> by compiling <a href="https://github.com/Z3Prover/z3/commit/88e777748ad94c097ff8d2e00359107a9f4aba76">Z3</a> 4.6.2/88e7777 with <a href="http://kripken.github.io/emscripten-site/">Emscripten</a> and F* 0.9.5/93af610 with <a href="https://github.com/ocsigen/js_of_ocaml">js_of_ocaml</a>.
       </div>
     </div>
 
@@ -123,13 +122,8 @@ let rec subst x e e' =
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.js" integrity="sha256-XDU6Po3hKjdQXJHRrKrWlIF/E6y6BBgV5eiqZSYePpo=" crossorigin="anonymous"></script>
 
-    <script src="./fstar.js/fstar.global-object.js"></script>
-    <script src="./fstar.js/fstar.ide.utils.js"></script>
     <script src="./fstar.js/fstar.cm.js"></script>
-    <script src="./fstar.js/fstar.client.utils.js"></script>
-    <script src="./fstar.js/fstar.ide.protocol.js"></script>
-    <script src="./fstar.js/fstar.ide.client.js"></script>
-    <script src="./fstar.js/fstar.ide.literate.client.js"></script>
+    <script src="./fstar.js/fstar.client.js"></script>
 
     <script>
       FStar.IDE.LiterateClient.run("stlc.fst");
