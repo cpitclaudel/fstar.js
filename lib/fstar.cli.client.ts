@@ -20,6 +20,10 @@ namespace FStar.CLI {
     const _ = FStar._;
     import Utils = FStar.ClientUtils;
 
+    // This needs to be customizable, because web workers are loaded relative to
+    // the current *page*, not to the current *script*.
+    export let WORKER_DIRECTORY = "./fstar.js/";
+
     export class Client {
         private ui: {
             $root: JQuery<HTMLElement>;
@@ -55,10 +59,6 @@ namespace FStar.CLI {
               <pre class="stdout"></pre>
             </div>`;
 
-        // This needs to be customizable, because web workers are loaded relative to
-        // the current *page*, not to the current *script*.
-        public static WORKER_DIRECTORY = "./fstar.js/";
-
         constructor(host: HTMLElement, fname: string, fcontents: string | null, cli: string) {
             const $root = $(Client.HTML);
             $(host).replaceWith($root);
@@ -73,7 +73,7 @@ namespace FStar.CLI {
                 $run: $root.find(".run").click(() => this.verifyCurrentInput())
             };
 
-            this.worker = new _Worker(Client.WORKER_DIRECTORY + "fstar.cli.worker.js");
+            this.worker = new _Worker(WORKER_DIRECTORY + "fstar.cli.worker.js");
             this.worker.onmessage = (msg: MessageEvent) => this.onMessage(msg);
 
             fname && this.ui.$fileName.val(fname);
