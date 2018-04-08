@@ -1,7 +1,7 @@
 {
   "name": "fstar",
   "version": "0.1.0",
-  "description": "Wrappers and bindings for F*.js",
+  "description": "Run F* on the web",
   "main": "fstar.js",
   "directories": {
     "lib": "lib"
