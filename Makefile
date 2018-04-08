@@ -1,4 +1,5 @@
-JS_BUILD_DIR=build/js
+LIB_BUILD_DIR=build/js/lib
+JSOO_BUILD_DIR=build/js/jsoo
 OCAML_BUILD_DIR=build/ocaml
 
 OCAML_ROOT=src/ocaml
@@ -7,7 +8,7 @@ STDLIB=$(FSTAR_ROOT)/ulib
 ULIB_ML32_SUBDIR=tmp/ulib-ml32
 ULIB_ML32_ROOT=$(OCAML_ROOT)/$(ULIB_ML32_SUBDIR)
 
-JS_OF_OCAML=ulimit -s unlimited; js_of_ocaml
+JS_OF_OCAML=ulimit -s unlimited; /build/js_of_ocaml/_build/default/compiler/js_of_ocaml.exe
 
 # ocamlbuild reverses dependencies, so list fstar/ulib/ml/32bit last to give it
 # priority over fstar/ulib/ml (it contains 32bit-friendly implementations)
@@ -29,7 +30,8 @@ OCAMLBUILD=cd $(OCAML_ROOT) && \
 default: opt
 
 build-dirs:
-	mkdir -p $(JS_BUILD_DIR)
+	mkdir -p $(LIB_BUILD_DIR)
+	mkdir -p $(JSOO_BUILD_DIR)
 	mkdir -p $(OCAML_BUILD_DIR)
 
 ulib-32:
@@ -65,19 +67,20 @@ JSOO_LIGHT_DEBUG_OPTS=--pretty --source-map
 JSOO_HEAVY_DEBUG_OPTS=--debug-info --disable execwrap # --debug-info and --disable inline make some things harder to read
 
 opt: $(OCAML_BUILD_DIR)/fstar.core.byte | build-dirs
-	$(JS_OF_OCAML) --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte -o $(JS_BUILD_DIR)/fstar.core.$@.js
-	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
-	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
+	$(JS_OF_OCAML) --opt 3 $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.byte -o $(JSOO_BUILD_DIR)/fstar.core.$@.js
+	./etc/jsoo_append_tail.py $(JSOO_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
+	cp $(JSOO_BUILD_DIR)/fstar.core.$@.js $(JSOO_BUILD_DIR)/fstar.core.js
 
 debug: $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
-	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte -o $(JS_BUILD_DIR)/fstar.core.$@.js
-	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
-	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
+	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_HEAVY_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte -o $(JSOO_BUILD_DIR)/fstar.core.$@.js
+	./etc/jsoo_append_tail.py $(JSOO_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
+	cp $(JSOO_BUILD_DIR)/fstar.core.$@.js $(JSOO_BUILD_DIR)/fstar.core.js
 
+# FIXME --disable excwrap?
 read: $(OCAML_BUILD_DIR)/fstar.core.d.byte | build-dirs
-	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte -o $(JS_BUILD_DIR)/fstar.core.$@.js
-	./etc/jsoo_append_tail.py $(JS_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
-	cp $(JS_BUILD_DIR)/fstar.core.$@.js $(JS_BUILD_DIR)/fstar.core.js
+	$(JS_OF_OCAML) $(JSOO_LIGHT_DEBUG_OPTS) $(JSOO_OPTS) $(OCAML_BUILD_DIR)/fstar.core.d.byte -o $(JSOO_BUILD_DIR)/fstar.core.$@.js
+	./etc/jsoo_append_tail.py $(JSOO_BUILD_DIR)/fstar.core.$@.js JSOO_FStar
+	cp $(JSOO_BUILD_DIR)/fstar.core.$@.js $(JSOO_BUILD_DIR)/fstar.core.js
 
 STDLIB_FILES_EXCLUDED=$(addprefix $(STDLIB)/,FStar.Int31.fst FStar.UInt31.fst FStar.Relational.State.fst) # See ulib/Makefile.verify
 STDLIB_FILES_SOURCES=$(wildcard $(STDLIB)/FStar.*.fst $(STDLIB)/FStar.*.fsti) $(STDLIB)/prims.fst
@@ -97,8 +100,14 @@ gen-depcache: $(OCAML_BUILD_DIR)/depcache.native $(STDLIB_FILES_SOURCES_TO_CHECK
 	@echo 'depcache [...]'
 	@build/ocaml/depcache.native $(FSTAR_ROOT) /fstar/ulib/ $(STDLIB_FILES_SOURCES_TO_CHECK:$(STDLIB)/%=%) > dist/fs/depcache
 
-dist: gen-index gen-depcache | dist-dirs
-	cp vendor/z3.js/z3smt2w.js vendor/z3.js/z3smt2w.wasm lib/*.js lib/*.css $(JS_BUILD_DIR)/fstar.core.js dist/
+$(LIB_BUILD_DIR)/fstar.%.js: $(wildcard lib/*.ts)
+	tsc --project "lib/tsconfig.$*.json"
+
+TSC_OUTPUTS=$(addprefix $(LIB_BUILD_DIR)/,fstar.client.js fstar.ide.worker.js fstar.cli.worker.js)
+
+dist: gen-index gen-depcache $(TSC_OUTPUTS) | dist-dirs
+	cp vendor/z3.js/z3smt2w.js vendor/z3.js/z3smt2w.wasm lib/*.js lib/*.css dist/
+	cp $(TSC_OUTPUTS) $(JSOO_BUILD_DIR)/fstar.core.js dist/
 	@cp $(STDLIB_FILES_ALL) dist/fs/ulib/
 
 serve: dist
@@ -106,7 +115,7 @@ serve: dist
 	python3 -m http.server
 
 serve-%:
-	cp $(JS_BUILD_DIR)/fstar.core.$*.js $(JS_BUILD_DIR)/fstar.core.js
+	cp $(JSOO_BUILD_DIR)/fstar.core.$*.js $(JSOO_BUILD_DIR)/fstar.core.js
 	+$(MAKE) serve
 
 release: dist
