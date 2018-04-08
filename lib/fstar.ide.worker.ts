@@ -2,44 +2,17 @@ namespace FStar.IDE.Worker {
     import Protocol = FStar.IDE.Protocol;
     import Utils = FStar.WorkerUtils;
 
-    const messages = {
-        ready: FStar.WorkerUtils.postMessage(Protocol.Worker.READY),
-        progress: FStar.WorkerUtils.postMessage(Protocol.Worker.PROGRESS),
-        message: FStar.WorkerUtils.postMessage(Protocol.Worker.MESSAGE),
-        response: FStar.WorkerUtils.postMessage(Protocol.Worker.RESPONSE),
-        exit: FStar.WorkerUtils.postMessage(Protocol.Worker.EXIT)
+    const messages = { // FIXME type safety
+        ready: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.READY),
+        progress: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.PROGRESS),
+        message: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.MESSAGE),
+        response: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.RESPONSE),
+        exit: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.EXIT)
     };
-
-    interface ClientInitOps { // FIXME move to protocol
-        fname: string;
-        fcontents: string;
-        args: string[];
-    }
-
-    interface ClientInitMessage {
-        kind: Protocol.Client.INIT;
-        payload: ClientInitOps;
-    }
-
-    interface ClientQueryMessage {
-        kind: Protocol.Client.QUERY;
-        payload: string;
-    }
-
-    interface ClientUpdateContentsOps {
-        fcontents: string;
-    }
-
-    interface ClientUpdateContentsMessage {
-        kind: Protocol.Client.UPDATE_CONTENTS;
-        payload: ClientUpdateContentsOps;
-    }
-
-    type ClientMessage = ClientInitMessage | ClientQueryMessage | ClientUpdateContentsMessage;
 
     class Instance {
         private ide: FStar.Driver.IDE | null;
-        private queue: ClientMessage[];
+        private queue: Protocol.ClientMessage[];
         private ready: boolean;
 
         constructor() {
@@ -64,25 +37,25 @@ namespace FStar.IDE.Worker {
             this.processMessages();
         }
 
-        private assertIDE(queryKind: Protocol.Client): FStar.Driver.IDE {
+        private assertIDE(queryKind: Protocol.ClientMessageKind): FStar.Driver.IDE {
             if (this.ide === null) {
                 throw new Error(`Cannot run query ${queryKind} before running INIT.`);
             }
             return this.ide;
         }
 
-        private processMessage(message: ClientMessage) {
+        private processMessage(message: Protocol.ClientMessage) {
             switch (message.kind) {
-                case Protocol.Client.INIT: {
+                case Protocol.ClientMessageKind.INIT: {
                     const payload = message.payload;
                     this.ide = new FStar.Driver.IDE(payload.fname, payload.fcontents,
                                                     payload.args, { message: messages.message,
                                                                     progress: messages.progress });
                     break;
-                } case Protocol.Client.UPDATE_CONTENTS:
+                } case Protocol.ClientMessageKind.UPDATE_CONTENTS:
                     this.assertIDE(message.kind).updateFile(message.payload.fcontents);
                     break;
-                case Protocol.Client.QUERY:
+                case Protocol.ClientMessageKind.QUERY:
                     this.assertIDE(message.kind).eval(message.payload, messages.response);
                     break;
                 default:
@@ -92,7 +65,7 @@ namespace FStar.IDE.Worker {
 
         private processMessages() {
             if (this.ready) {
-                this.queue.forEach((msg) => this.processMessage(msg));
+                this.queue.forEach(msg => this.processMessage(msg));
                 this.queue = [];
             }
         }
@@ -104,5 +77,5 @@ namespace FStar.IDE.Worker {
     }
 
     // This runs unconditionally (this file is called through `new WebWorker(…)`)
-    const instance = new Instance();
+    export const instance = new Instance();
 }
