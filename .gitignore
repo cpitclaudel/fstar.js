@@ -1,11 +1,12 @@
 attic.*
-node_modules/
 /todo.org
 
+/attic/
 /build/
 /build.bak/
+/dist/
 /scratch/
 /src/ocaml/tmp/
-
 /vendor/z3.js/
-/web/fstar.js/
+/web/fstar.js
+
