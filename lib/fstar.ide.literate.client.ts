@@ -562,6 +562,9 @@ namespace FStar.IDE.LiterateClient {
     export let instance: Instance | null = null;
 
     export function run(fname: string) {
+        if (typeof (self as any).WebAssembly !== "object") {
+            $("body").addClass("fstar-webassembly-unavailable");
+        }
         instance = instance || new Instance(fname);
     }
 }

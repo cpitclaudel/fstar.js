@@ -48,19 +48,23 @@ namespace FStar.SMTDriver {
     export function initEmscripten(stdout: Utils.Writer, stderr: Utils.Writer,
                                    onProgress: (msg: string) => void,
                                    then: (engine: EmscriptenModule) => void) {
-        fetchWasmModuleAsync("z3smt2w.wasm", onProgress, wasmModule => {
-            function instantiateWasm(info: any,
-                                     receiveInstance: (inst: WebAssembly.Instance) => void) {
-                // We do this here in preparation for IndexedDB support
-                const winstance = new WebAssembly.Instance(wasmModule, info);
-                receiveInstance(winstance);
-                return winstance.exports;
-            }
-            const options = { instantiateWasm,
-                              print: (str: string) => stdout.write(str),
-                              printErr: (str: string) => stderr.write(str) };
-            ENGINE(options).then(then);
-        });
+        if (typeof WebAssembly !== "object") {
+            onProgress("This browser does not support WebAssembly.  Loading interrupted.");
+        } else {
+            fetchWasmModuleAsync("z3smt2w.wasm", onProgress, wasmModule => {
+                function instantiateWasm(info: any,
+                                         receiveInstance: (inst: WebAssembly.Instance) => void) {
+                    // We do this here in preparation for IndexedDB support
+                    const winstance = new WebAssembly.Instance(wasmModule, info);
+                    receiveInstance(winstance);
+                    return winstance.exports;
+                }
+                const options = { instantiateWasm,
+                                  print: (str: string) => stdout.write(str),
+                                  printErr: (str: string) => stderr.write(str) };
+                ENGINE(options).then(then);
+            });
+        }
     }
 
     export interface SMTCLICallbacks {

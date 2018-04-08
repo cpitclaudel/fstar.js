@@ -57,6 +57,10 @@ html {
     text-decoration: underline;
 }
 
+.fstar-webassembly-unavailable .fstar-snippet-submit {
+    display: none;
+}
+
 /* .fstar-snippet-pending .CodeMirror-gutters, */
 .fstar-snippet-pending > .CodeMirror,
 .fstar-progress-bar-pending {
