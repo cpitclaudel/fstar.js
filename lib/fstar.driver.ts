@@ -10,20 +10,6 @@ interface JSOOFStarOptions {
     fstar_args?: string[];
 }
 
-interface JSOOFStarEngine extends JSOOFStarOptions {
-    setCollectOneCache(buf: ArrayBuffer): void;
-    registerLazyFS(index: object, files: object, root: string, resolver: (fname: string) => Uint8Array): void;
-    writeFile(fname: string, fcontents: string): void;
-    setSMTSolver(ask: (query: string) => string, refresh: () => void): void;
-    setChannelFlushers(stdout: (s: string) => void, stderr: (s: string) => void): void;
-    callMain(): void;
-    callMainUnsafe(): void;
-    repl: {
-        init(fname: string, onMessage: (msg: string) => void): void;
-        evalStr(query: string): string;
-    };
-}
-
 declare const Buffer: any | undefined;
 declare const InternalError: any | undefined;
 declare const JSOO_FStar: (opts: JSOOFStarOptions) => void;
@@ -32,14 +18,29 @@ namespace FStar.Driver {
     import Utils = FStar.WorkerUtils;
     const debug = Utils.debug;
 
+    interface JSOOFStarEngine extends JSOOFStarOptions {
+        setCollectOneCache(buf: ArrayBuffer): void;
+        registerLazyFS(index: object, files: object, root: string, resolver: (fname: string) => Uint8Array): void;
+        writeFile(fname: string, fcontents: string): void;
+        setSMTSolver(ask: (query: string) => string, refresh: () => void): void;
+        setChannelFlushers(stdout: (s: string) => void, stderr: (s: string) => void): void;
+        callMain(): void;
+        callMainUnsafe(): void;
+        repl: {
+            init(fname: string, onMessage: (msg: string) => void): void;
+            evalStr(query: string): string;
+        };
+    }
+
     /// JSOO Constructors
+    const jsooKeys: Array<keyof JSOOFStarOptions> = [ "console", "Object", "Array", "Uint8Array",
+                                                      "Buffer", "Error", "RangeError", "InternalError" ];
 
     // Prepare a minimal global object for js_of_ocaml.
     function freshJsooGlobalObject(fstar_args: string[]) {
-        return { console,
-                 Object, Array, Uint8Array, Buffer,
-                 Error, RangeError, InternalError,
-                 fstar_args };
+        const obj: JSOOFStarOptions = { fstar_args };
+        jsooKeys.forEach(key => obj[key] = (self as any)[key]);
+        return obj;
     }
 
     let qid = 0;
@@ -74,7 +75,7 @@ namespace FStar.Driver {
     // Start a new instance of F* with arguments ‘args’.
     export function freshFStar(args: string[], callbacks: { progress: (msg: string | null) => void }) {
         debug("Creating a new F* instance with arguments", args);
-        const engine = initFStarInPlace (freshJsooGlobalObject(args));
+        const engine = initFStarInPlace(freshJsooGlobalObject(args));
         engine.setCollectOneCache(lazyFS.depcache);
         const resolver = urlSyncResolver(lazyFS.urlPrefix, callbacks.progress);
         engine.registerLazyFS(lazyFS.index, lazyFS.files, lazyFS.fs_root, resolver);
@@ -119,22 +120,20 @@ namespace FStar.Driver {
             const IDE_FLAG = "--ide";
             this.args = args.concat(args.indexOf(IDE_FLAG) < 0 ? [IDE_FLAG] : []);
             this.engine = Driver.freshFStar(this.args.concat([fname]), callbacks);
-            (fcontents !== null) && this.engine.writeFile(fname, fcontents); // FIXME updateFile
+            (fcontents !== null) && this.updateFile(fcontents);
 
-            this.engine.repl.init(fname, (msg: string) => {
-                callbacks.message(JSON.parse(msg));
-            });
+            this.engine.repl.init(fname, (msg: string) => callbacks.message(JSON.parse(msg)));
         }
 
         // Run ‘query’ synchronously.  This is mostly for debugging purposes,
         // since F*'s --ide mode might become asynchronous some day.
-        public evalSync(query: string): string {
+        public evalSync(query: object): string {
             return JSON.parse(this.engine.repl.evalStr(JSON.stringify(query)));
         }
 
         // Run ‘query’, passing the results to ‘callback’.  This currently calls
         // ‘callback’ immediately, but clients shouldn't rely on this.
-        public eval(query: string, callback: (response: string) => void) {
+        public eval(query: object, callback: (response: string) => void) {
             callback(this.evalSync(query));
         }
 
@@ -159,7 +158,7 @@ namespace FStar.Driver {
 
         export function verifySync(fname: string, fcontents: string | null, args: string[],
                                    catchExceptions: boolean) {
-            const stdout = new Utils.Flusher(), stderr = new Utils.Flusher();
+            const [stdout, stderr] = [new Utils.Flusher(), new Utils.Flusher()];
             const retv = Driver.CLI.verify(fname, fcontents, args, stdout, stderr, catchExceptions);
             return { exitCode: retv,
                      stdout: stdout.lines,

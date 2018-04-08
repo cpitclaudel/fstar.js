@@ -7,10 +7,8 @@ if (Error.hasOwnProperty("stackTraceLimit")) {
     Error.stackTraceLimit = 50;
 }
 
-const _underscore: any = _;
-declare const $u: _.UnderscoreStatic | undefined;
-
 namespace FStar {
     // Sphinx renames _
-    const _ = typeof($u) !== "undefined" ? $u : _underscore;
+    export const _: _.UnderscoreStatic = (self as any).$u || (self as any)._;
+    export const _Worker = (self as any).Worker;
 }

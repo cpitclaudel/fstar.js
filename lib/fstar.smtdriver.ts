@@ -12,7 +12,7 @@ namespace FStar.SMTDriver {
 
     // User configuration:
     declare const Z3: ((params: object) => EmscriptenModule);
-    export let ENGINE = Z3;
+    export let ENGINE = (params: object) => Z3(params); // Delay resolution of ‘Z3’
     export let LOG_QUERIES = false;
 
     /// Emscripten initialization
@@ -34,7 +34,7 @@ namespace FStar.SMTDriver {
     function fetchWasmModuleAsync(url: string,
                                   onProgress: (msg: string) => void,
                                   onLoad: (mod: WebAssembly.Module) => void) {
-        fetchWasmBinaryAsync(url, onProgress, (wasmBinary) => {
+        fetchWasmBinaryAsync(url, onProgress, wasmBinary => {
             onProgress("Compiling Z3…");
             const start = Date.now();
             const wmod = new WebAssembly.Module(wasmBinary);
@@ -48,7 +48,7 @@ namespace FStar.SMTDriver {
     export function initEmscripten(stdout: Utils.Writer, stderr: Utils.Writer,
                                    onProgress: (msg: string) => void,
                                    then: (engine: EmscriptenModule) => void) {
-        fetchWasmModuleAsync("z3smt2w.wasm", onProgress, (wasmModule) => {
+        fetchWasmModuleAsync("z3smt2w.wasm", onProgress, wasmModule => {
             function instantiateWasm(info: any,
                                      receiveInstance: (inst: WebAssembly.Instance) => void) {
                 // We do this here in preparation for IndexedDB support
@@ -56,7 +56,6 @@ namespace FStar.SMTDriver {
                 receiveInstance(instance);
                 return instance.exports;
             }
-            // FIXME check binding here
             const options = { instantiateWasm,
                               print: (str: string) => stdout.write(str),
                               printErr: (str: string) => stderr.write(str) };
@@ -81,10 +80,6 @@ namespace FStar.SMTDriver {
             allocateUTF8(str: string): cpointer;
         }
 
-        interface ReadySMTCLI {
-            engine: SmtEngine;
-        }
-
         class SMTCLI { // FIXME flatten hierarchy
             private stdout: Utils.Flusher;
             private stderr: Utils.Flusher;
@@ -104,9 +99,8 @@ namespace FStar.SMTDriver {
                 this.smtParams = smtParams;
                 this.callbacks = callbacks;
 
-                SMTDriver.initEmscripten(this.stdout, this.stderr, callbacks.progress, (mod) => {
-                    this.onRuntimeInitialized(mod);
-                });
+                SMTDriver.initEmscripten(this.stdout, this.stderr, callbacks.progress,
+                                         mod => this.onRuntimeInitialized(mod));
             }
 
             private onRuntimeInitialized(mod: EmscriptenModule): void {

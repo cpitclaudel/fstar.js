@@ -1,9 +1,10 @@
 namespace FStar.WorkerUtils {
     export let DEBUG: boolean = true;
 
-    export function debug(...msgs: any[]) {
+    export function debug(...args: any[]) {
         if (DEBUG) {
-            console.debug(...msgs);
+            // tslint:disable-next-line: no-console
+            console.debug(...args);
         }
     }
 
@@ -39,16 +40,12 @@ namespace FStar.WorkerUtils {
     }
 
     export function postMessage(kind: string) {
-        return (payload?: any): void => {
+        return (payload?: any): void =>
             assertDedicatedWorker().postMessage({ kind, payload });
-        };
     }
 
-    export function loadBinaries() { // FIXME rename // FIXME merge all these files
-        self.importScripts("./fstar.core.js",
-                           "./fstar.driver.js",
-                           "./z3smt2w.js",
-                           "./fstar.smtdriver.js");
+    export function loadBinaries() {
+        self.importScripts("./fstar.core.js", "./z3smt2w.js");
     }
 
     export function assert(condition: boolean, message?: string) {
@@ -57,7 +54,9 @@ namespace FStar.WorkerUtils {
         }
     }
 
-    export function assertNever(x: never): never { /* nothing */ }
+    export function assertNever(x: never): never {
+        throw new Error(`Unexpected value: ${x}`);
+    }
 
     export function fetchSync(url: string, responseType: XMLHttpRequestResponseType) {
         const xhr = new XMLHttpRequest();
