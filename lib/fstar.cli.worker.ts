@@ -13,11 +13,9 @@ namespace FStar.CLI.Worker {
     };
 
     class Instance {
-        private queue: Protocol.ClientMessage[];
         private ready: boolean;
 
         constructor() {
-            this.queue = [];
             this.ready = false;
             Utils.assertDedicatedWorker().onmessage =
                 (ev: MessageEvent) => this.onMessage(ev);
@@ -27,15 +25,11 @@ namespace FStar.CLI.Worker {
             messages.progress("Downloading Z3…");
             FStar.Driver.initSMT({ progress: messages.progress,
                                    ready: () => this.smtInitialized() });
-            // We need a queue because Emscripten's initialization is asynchronous,
-            // so we can't just start processing requests as they come.
-            // FIXME get rid of the queue and reject requests until ready
         }
 
         private smtInitialized() {
             messages.ready();
             this.ready = true;
-            this.processMessages();
         }
 
         public verify(msg: Protocol.ClientVerifyPayload) {
@@ -50,16 +44,11 @@ namespace FStar.CLI.Worker {
             this.verify(message.payload);
         }
 
-        private processMessages() {
-            if (this.ready) {
-                this.queue.forEach(msg => this.processMessage(msg));
-                this.queue = [];
-            }
-        }
-
         private onMessage(event: MessageEvent) {
-            this.queue.push(event.data);
-            this.processMessages();
+            if (!this.ready) {
+                throw new Error("Received a message before initialization completed");
+            }
+            this.processMessage(event.data);
         }
     }
 
