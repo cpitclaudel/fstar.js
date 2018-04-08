@@ -13,9 +13,23 @@
     <div id="main">
       <h1>F*.js</h1>
 
-      <div class="standalone-editor">
-        Loading F*…
-      </div>
+      <div class="standalone-editor"><pre>/// ==========================================
+///  Case study: simply-typed lambda-calculus
+/// ==========================================
+///
+/// .. |fstar| replace:: F\*
+
+module STLC
+
+open FStar.Tactics
+
+type ty =
+  | TBool  : ty
+  | TArrow : tin:ty -&gt; tout:ty -&gt; ty
+
+type var = int
+</pre>
+</div>
 
       <div id="footer">
         Assembled by <a href="http://pit-claudel.fr/clement/">Clément Pit-Claudel</a> by compiling <a href="https://github.com/Z3Prover/z3/commit/88e777748ad94c097ff8d2e00359107a9f4aba76">Z3</a> 4.6.2/88e7777 with <a href="http://kripken.github.io/emscripten-site/">Emscripten</a> and F* 0.9.5/93af610 with <a href="https://github.com/ocsigen/js_of_ocaml">js_of_ocaml</a>.
@@ -27,7 +41,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script>
 
-    <script src="./fstar.cli.examples.js"></script>
     <script src="./fstar.js/fstar.cm.js"></script>
     <script src="./fstar.js/fstar.client.js"></script>
 

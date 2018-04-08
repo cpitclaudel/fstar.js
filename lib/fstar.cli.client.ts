@@ -1,8 +1,4 @@
 namespace FStar.CLI {
-    export const examples: { [k: string]: string[] } = {};
-}
-
-namespace FStar.CLI {
     const _ = FStar._;
     import Utils = FStar.ClientUtils;
 
@@ -58,8 +54,6 @@ namespace FStar.CLI {
                 $examples: $root.find(".examples").empty(),
                 $run: $root.find(".run").click(() => this.verifyCurrentInput())
             };
-
-            this.addExamples();
 
             this.worker = new _Worker(Client.WORKER_DIRECTORY + "fstar.cli.worker.js");
             this.worker.onmessage = (msg: MessageEvent) => this.onMessage(msg);
@@ -132,9 +126,9 @@ namespace FStar.CLI {
             this.ui.$fileName.val(fname);
         }
 
-        private addExamples() {
+        public addExamples(examples: { [k: string]: string[] }) {
             this.ui.$examples.empty();
-            _.each(FStar.CLI.examples, (lines: string[], exampleName: string) => {
+            _.each(examples || {}, (lines: string[], exampleName: string) => {
                 const $link = $("<span>", { class: "example-link" });
                 $link.click(() => this.setValue(lines.join("\n")));
                 $link.text(exampleName);
