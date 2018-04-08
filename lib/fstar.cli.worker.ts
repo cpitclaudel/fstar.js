@@ -1,15 +1,15 @@
 namespace FStar.CLI.Worker {
     import Protocol = FStar.CLI.Protocol;
-    import WorkerUtils = FStar.WorkerUtils;
+    import Utils = FStar.WorkerUtils;
 
     export let CATCH_EXCEPTIONS = true; // Turn off to improve JS debugging.
 
     const messages = {
-        ready: WorkerUtils.postMessage(Protocol.Worker.READY),
-        progress: WorkerUtils.postMessage(Protocol.Worker.PROGRESS),
-        stdout: WorkerUtils.postMessage(Protocol.Worker.STDOUT),
-        stderr: WorkerUtils.postMessage(Protocol.Worker.STDERR),
-        verification_complete: WorkerUtils.postMessage(Protocol.Worker.VERIFICATION_COMPLETE)
+        ready: Utils.postMessage(Protocol.Worker.READY),
+        progress: Utils.postMessage(Protocol.Worker.PROGRESS),
+        stdout: Utils.postMessage(Protocol.Worker.STDOUT),
+        stderr: Utils.postMessage(Protocol.Worker.STDERR),
+        verification_complete: Utils.postMessage(Protocol.Worker.VERIFICATION_COMPLETE)
     };
 
     interface ClientVerifyOpts {
@@ -18,7 +18,7 @@ namespace FStar.CLI.Worker {
         args: string[];
     }
 
-    interface ClientVerifyMessage {
+    interface ClientVerifyMessage { // FIXME move to protocol
         kind: Protocol.Client.VERIFY;
         payload: ClientVerifyOpts;
     }
@@ -36,11 +36,11 @@ namespace FStar.CLI.Worker {
         constructor() {
             this.queue = [];
             this.ready = false;
-            (self as DedicatedWorkerGlobalScope).onmessage =
+            Utils.assertDedicatedWorker().onmessage =
                 (ev: MessageEvent) => this.onMessage(ev);
 
             messages.progress("Downloading and initializing F*…");
-            WorkerUtils.loadBinaries();
+            Utils.loadBinaries();
             messages.progress("Downloading Z3…");
             FStar.Driver.initSMT({ progress: messages.progress,
                                    ready: () => this.smtInitialized() });

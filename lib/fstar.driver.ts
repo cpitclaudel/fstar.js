@@ -24,8 +24,8 @@ interface JSOOFStarEngine extends JSOOFStarOptions {
     };
 }
 
-declare const Buffer: any;
-declare const InternalError: any;
+declare const Buffer: any | undefined;
+declare const InternalError: any | undefined;
 declare const JSOO_FStar: (opts: JSOOFStarOptions) => void;
 
 namespace FStar.Driver {

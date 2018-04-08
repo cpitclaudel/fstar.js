@@ -1,17 +1,8 @@
-"use strict";
-/* global self FStar */
+namespace FStar.IDE.Worker {
+    import Protocol = FStar.IDE.Protocol;
+    import Utils = FStar.WorkerUtils;
 
-self.importScripts("./fstar.global-object.js");
-self.importScripts("./fstar.ide.protocol.js");
-self.importScripts("./fstar.worker.utils.js");
-
-FStar.IDE = FStar.IDE || {};
-FStar.IDE.Worker = FStar.IDE.Worker || {};
-
-(function () {
-    var Protocol = FStar.IDE.Protocol;
-
-    var messages = {
+    const messages = {
         ready: FStar.WorkerUtils.postMessage(Protocol.Worker.READY),
         progress: FStar.WorkerUtils.postMessage(Protocol.Worker.PROGRESS),
         message: FStar.WorkerUtils.postMessage(Protocol.Worker.MESSAGE),
@@ -19,67 +10,99 @@ FStar.IDE.Worker = FStar.IDE.Worker || {};
         exit: FStar.WorkerUtils.postMessage(Protocol.Worker.EXIT)
     };
 
-    function Instance() {
-        var _this = this;
-
-        this.ide = null;
-        this.queue = [];
-        this.ready = false;
-        self.onmessage = function (message) { _this.onMessage(message); };
-
-        messages.progress("Downloading and initializing F*…");
-        FStar.WorkerUtils.loadBinaries();
-        messages.progress("Downloading Z3…");
-        FStar.Driver.initSMT({ progress: messages.progress,
-                               ready: function () { _this.smtInitialized(); }});
-        // We need a queue because the engine's initialization is asynchronous,
-        // so we can't just start processing requests as they come.
+    interface ClientInitOps { // FIXME move to protocol
+        fname: string;
+        fcontents: string;
+        args: string[];
     }
 
-    Instance.prototype.smtInitialized = function() {
-        messages.progress(null);
-        messages.ready();
-        this.ready = true;
-        this.processMessages();
-    };
+    interface ClientInitMessage {
+        kind: Protocol.Client.INIT;
+        payload: ClientInitOps;
+    }
 
-    Instance.prototype.processMessage = function(message) {
-        var kind = message.kind;
-        var payload = message.payload;
-        switch (kind) {
-        case Protocol.Client.INIT:
-            this.ide = new FStar.Driver.IDE(payload.fname, payload.fcontents,
-                                            payload.args, { message: messages.message,
-                                                            progress: messages.progress });
-            break;
-        case Protocol.Client.UPDATE_CONTENTS:
-            this.ide.updateFile(payload.fcontents);
-            break;
-        case Protocol.Client.QUERY:
-            this.ide.eval(payload, messages.response);
-            break;
-        default:
-            FStar.WorkerUtils.assert(false);
-        }
-    };
+    interface ClientQueryMessage {
+        kind: Protocol.Client.QUERY;
+        payload: string;
+    }
 
-    Instance.prototype.processMessages = function() {
-        if (this.ready) {
-            var _this = this;
-            this.queue.forEach(function(msg) { _this.processMessage(msg); });
+    interface ClientUpdateContentsOps {
+        fcontents: string;
+    }
+
+    interface ClientUpdateContentsMessage {
+        kind: Protocol.Client.UPDATE_CONTENTS;
+        payload: ClientUpdateContentsOps;
+    }
+
+    type ClientMessage = ClientInitMessage | ClientQueryMessage | ClientUpdateContentsMessage;
+
+    class Instance {
+        private ide: FStar.Driver.IDE | null;
+        private queue: ClientMessage[];
+        private ready: boolean;
+
+        constructor() {
+            this.ide = null;
             this.queue = [];
+            this.ready = false;
+            Utils.assertDedicatedWorker().onmessage = (message: MessageEvent) => this.onMessage(message);
+
+            messages.progress("Downloading and initializing F*…");
+            Utils.loadBinaries();
+            messages.progress("Downloading Z3…");
+            FStar.Driver.initSMT({ progress: messages.progress,
+                                   ready: () => this.smtInitialized() });
+            // We need a queue because the engine's initialization is asynchronous,
+            // so we can't just start processing requests as they come.
         }
-    };
 
-    Instance.prototype.onMessage = function(event) {
-        this.queue.push(event.data);
-        this.processMessages();
-    };
+        private smtInitialized() {
+            messages.progress(null);
+            messages.ready();
+            this.ready = true;
+            this.processMessages();
+        }
 
-    FStar.IDE.Worker.instance = null;
-    FStar.IDE.Worker.run = function () {
-        FStar.IDE.Worker.instance = FStar.IDE.Worker.instance || new Instance();
-    };
-}());
+        private assertIDE(queryKind: Protocol.Client): FStar.Driver.IDE {
+            if (this.ide === null) {
+                throw new Error(`Cannot run query ${queryKind} before running INIT.`);
+            }
+            return this.ide;
+        }
 
-FStar.IDE.Worker.run();
+        private processMessage(message: ClientMessage) {
+            switch (message.kind) {
+                case Protocol.Client.INIT: {
+                    const payload = message.payload;
+                    this.ide = new FStar.Driver.IDE(payload.fname, payload.fcontents,
+                                                    payload.args, { message: messages.message,
+                                                                    progress: messages.progress });
+                    break;
+                } case Protocol.Client.UPDATE_CONTENTS:
+                    this.assertIDE(message.kind).updateFile(message.payload.fcontents);
+                    break;
+                case Protocol.Client.QUERY:
+                    this.assertIDE(message.kind).eval(message.payload, messages.response);
+                    break;
+                default:
+                    Utils.assertNever(message);
+            }
+        }
+
+        private processMessages() {
+            if (this.ready) {
+                this.queue.forEach((msg) => this.processMessage(msg));
+                this.queue = [];
+            }
+        }
+
+        private onMessage(event: MessageEvent) {
+            this.queue.push(event.data);
+            this.processMessages();
+        }
+    }
+
+    // This runs unconditionally (this file is called through `new WebWorker(…)`)
+    const instance = new Instance();
+}

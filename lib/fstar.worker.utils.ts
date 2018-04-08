@@ -31,12 +31,16 @@ namespace FStar.WorkerUtils {
         }
     }
 
-    export function postMessage(kind: string) {
+    export function assertDedicatedWorker(): DedicatedWorkerGlobalScope {
         if (!(self instanceof DedicatedWorkerGlobalScope)) {
             throw new Error("This method only works in dedicated workers.");
         }
+        return (self as DedicatedWorkerGlobalScope);
+    }
+
+    export function postMessage(kind: string) {
         return (payload?: any): void => {
-            (self as DedicatedWorkerGlobalScope).postMessage({ kind, payload });
+            assertDedicatedWorker().postMessage({ kind, payload });
         };
     }
 
