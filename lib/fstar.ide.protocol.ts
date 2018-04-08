@@ -1,11 +1,11 @@
 namespace FStar.IDE.Protocol {
-    enum Client {
+    export enum Client {
         INIT = "INIT",
         QUERY = "QUERY",
         UPDATE_CONTENTS = "UPDATE_CONTENTS"
     }
 
-    enum Worker {
+    export enum Worker {
         PROGRESS = "PROGRESS",
         READY = "READY",
         MESSAGE = "MESSAGE",
@@ -13,7 +13,7 @@ namespace FStar.IDE.Protocol {
         EXIT = "EXIT"
     }
 
-    enum Status {
+    export enum Status {
         SUCCESS = "success",
         FAILURE = "failure",
         MESSAGE = "message"

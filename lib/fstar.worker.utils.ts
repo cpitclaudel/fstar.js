@@ -35,7 +35,7 @@ namespace FStar.WorkerUtils {
         if (!(self instanceof DedicatedWorkerGlobalScope)) {
             throw new Error("This method only works in dedicated workers.");
         }
-        return (payload: any): void => {
+        return (payload?: any): void => {
             (self as DedicatedWorkerGlobalScope).postMessage({ kind, payload });
         };
     }
@@ -47,11 +47,13 @@ namespace FStar.WorkerUtils {
                            "./fstar.smtdriver.js");
     }
 
-    export function assert(condition: boolean, message: string | null) {
+    export function assert(condition: boolean, message?: string) {
         if (!condition) {
             throw (message || "assertion failed");
         }
     }
+
+    export function assertNever(x: never): never { /* nothing */ }
 
     export function fetchSync(url: string, responseType: XMLHttpRequestResponseType) {
         const xhr = new XMLHttpRequest();

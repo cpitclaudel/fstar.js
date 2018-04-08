@@ -1,9 +1,9 @@
-namespace FStar.CLI.Protocol {
-    enum Client {
+namespace FStar.CLI.Protocol { // FIXME rename
+    export enum Client {
         VERIFY = "VERIFY"
     }
 
-    enum Worker {
+    export enum Worker {
         PROGRESS = "PROGRESS",
         READY = "READY",
         STDOUT = "STDOUT",

@@ -1,84 +1,89 @@
-"use strict";
-/* global self FStar */
+namespace FStar.CLI.Worker {
+    import Protocol = FStar.CLI.Protocol;
+    import WorkerUtils = FStar.WorkerUtils;
 
-self.importScripts("./fstar.global-object.js");
-self.importScripts("./fstar.cli.protocol.js");
-self.importScripts("./fstar.worker.utils.js");
+    export let CATCH_EXCEPTIONS = true; // Turn off to improve JS debugging.
 
-FStar.CLI = FStar.CLI || {};
-FStar.CLI.Worker = FStar.CLI.Worker || {};
-
-(function () {
-    var Protocol = FStar.CLI.Protocol;
-
-    var messages = {
-        ready: FStar.WorkerUtils.postMessage(Protocol.Worker.READY),
-        progress: FStar.WorkerUtils.postMessage(Protocol.Worker.PROGRESS),
-        stdout: FStar.WorkerUtils.postMessage(Protocol.Worker.STDOUT),
-        stderr: FStar.WorkerUtils.postMessage(Protocol.Worker.STDERR),
-        verification_complete: FStar.WorkerUtils.postMessage(Protocol.Worker.VERIFICATION_COMPLETE)
+    const messages = {
+        ready: WorkerUtils.postMessage(Protocol.Worker.READY),
+        progress: WorkerUtils.postMessage(Protocol.Worker.PROGRESS),
+        stdout: WorkerUtils.postMessage(Protocol.Worker.STDOUT),
+        stderr: WorkerUtils.postMessage(Protocol.Worker.STDERR),
+        verification_complete: WorkerUtils.postMessage(Protocol.Worker.VERIFICATION_COMPLETE)
     };
 
-    function Instance() {
-        var _this = this;
-
-        this.queue = [];
-        this.ready = false;
-        self.onmessage = function (message) { _this.onMessage(message); };
-
-        messages.progress("Downloading and initializing F*…");
-        FStar.WorkerUtils.loadBinaries();
-        messages.progress("Downloading Z3…");
-        FStar.Driver.initSMT({ progress: messages.progress,
-                               ready: function () { _this.smtInitialized(); }});
-        // We need a queue because Emscripten's initialization is asynchronous,
-        // so we can't just start processing requests as they come.
+    interface ClientVerifyOpts {
+        fname: string;
+        fcontents: string;
+        args: string[];
     }
 
-    Instance.prototype.smtInitialized = function() {
-        messages.ready();
-        this.ready = true;
-        this.processMessages();
-    };
+    interface ClientVerifyMessage {
+        kind: Protocol.Client.VERIFY;
+        payload: ClientVerifyOpts;
+    }
 
-    FStar.CLI.CATCH_EXCEPTIONS = true; // Turn off to improve JS debugging.
+    type ClientMessage = ClientVerifyMessage;
 
-    Instance.prototype.verify = function(fname, fcontents, args) {
-        var retv = FStar.Driver.CLI.verify(fname, fcontents, args,
-                                           messages.stdout, messages.stderr,
-                                           FStar.CLI.CATCH_EXCEPTIONS);
-        messages.verification_complete(retv);
-    };
+    function isClientMessage(ev: MessageEvent): ev is MessageEvent & { data: ClientMessage } {
+        return ev.data.kind === Protocol.Client.VERIFY;
+    }
 
-    Instance.prototype.processMessage = function(message) {
-        var kind = message.kind;
-        var payload = message.payload;
-        switch (kind) {
-        case Protocol.Client.VERIFY:
-            this.verify(payload.fname, payload.fcontents, payload.args);
-            break;
-        default:
-            FStar.WorkerUtils.assert(false);
-        }
-    };
+    class Instance {
+        private queue: ClientMessage[];
+        private ready: boolean;
 
-    Instance.prototype.processMessages = function() {
-        if (this.ready) {
-            var _this = this;
-            this.queue.forEach(function(msg) { _this.processMessage(msg); });
+        constructor() {
             this.queue = [];
+            this.ready = false;
+            (self as DedicatedWorkerGlobalScope).onmessage =
+                (ev: MessageEvent) => this.onMessage(ev);
+
+            messages.progress("Downloading and initializing F*…");
+            WorkerUtils.loadBinaries();
+            messages.progress("Downloading Z3…");
+            FStar.Driver.initSMT({ progress: messages.progress,
+                                   ready: () => this.smtInitialized() });
+            // We need a queue because Emscripten's initialization is asynchronous,
+            // so we can't just start processing requests as they come.
+            // FIXME get rid of the queue and reject requests until ready
         }
-    };
 
-    Instance.prototype.onMessage = function(event) {
-        this.queue.push(event.data);
-        this.processMessages();
-    };
+        private smtInitialized() {
+            messages.ready();
+            this.ready = true;
+            this.processMessages();
+        }
 
-    FStar.CLI.Worker.instance = null;
-    FStar.CLI.Worker.run = function () {
-        FStar.CLI.Worker.instance = FStar.CLI.Worker.instance || new Instance();
-    };
-}());
+        public verify(msg: ClientVerifyOpts) {
+            const retv = FStar.Driver.CLI.verify(msg.fname, msg.fcontents, msg.args,
+                                                 { write: messages.stdout },
+                                                 { write: messages.stderr },
+                                                 CATCH_EXCEPTIONS);
+            messages.verification_complete(retv);
+        }
 
-FStar.CLI.Worker.run();
+        private processMessage(message: ClientMessage) {
+            this.verify(message.payload);
+        }
+
+        private processMessages() {
+            if (this.ready) {
+                this.queue.forEach((msg) => this.processMessage(msg));
+                this.queue = [];
+            }
+        }
+
+        private onMessage(event: MessageEvent) {
+            if (!isClientMessage(event)) {
+                throw new Error(`Unexpected message: ${event}`);
+            }
+            this.queue.push(event.data);
+            this.processMessages();
+        }
+
+    }
+
+    // This runs unconditionally (this file is called through `new WebWorker(…)`)
+    const instance = new Instance();
+}
