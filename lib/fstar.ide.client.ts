@@ -50,7 +50,10 @@ namespace FStar.IDE {
         }
 
         public remove(key: string | number) {
-            delete this.elems[key];
+            if (this.containsKey(key)) {
+                this.length--;
+                delete this.elems[key];
+            }
         }
     }
 
