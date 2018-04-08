@@ -1,0 +1,18 @@
+{
+    "extends": "./tsconfig.base.json",
+    "comment": "This configuration packages all files to run in the CLI Worker.",
+    "compilerOptions": {
+        "lib": ["webworker", "es5"],
+        "outFile": "../build/js/lib/fstar.cli.worker.js",
+        "types" : ["underscore", "webassembly-js-api"]
+    },
+    "files": [
+        "fstar.global-object.ts",
+        "fstar.worker.utils.ts",
+        "fstar.smtdriver.ts",
+        "fstar.driver.ts",
+
+        "fstar.cli.protocol.ts",
+        "fstar.cli.worker.ts"
+    ]
+}

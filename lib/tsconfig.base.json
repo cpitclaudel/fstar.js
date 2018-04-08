@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "none",
+        "lib": ["webworker", "dom", "es5"],
+
+        "sourceMap": true,
+
+        "strict": true,
+        "noEmitOnError": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true
+    }
+}

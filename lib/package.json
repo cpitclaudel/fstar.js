@@ -1,0 +1,30 @@
+{
+  "name": "fstar",
+  "version": "0.1.0",
+  "description": "Wrappers and bindings for F*.js",
+  "main": "fstar.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cpitclaudel/fstar.js.git"
+  },
+  "author": "Clément Pit-Claudel",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/cpitclaudel/fstar.js/issues"
+  },
+  "homepage": "https://github.com/cpitclaudel/fstar.js#readme",
+  "devDependencies": {
+    "@types/codemirror": "0.0.56",
+    "@types/jquery": "^3.3.1",
+    "@types/mustache": "^0.8.30",
+    "@types/underscore": "^1.8.8",
+    "@types/webassembly-js-api": "0.0.1",
+    "typescript": "^2.8.1"
+  }
+}

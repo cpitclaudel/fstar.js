@@ -1,0 +1,29 @@
+{
+    "extends": "./tsconfig.base.json",
+    "comment": "This configuration is picked-up by IDEs; it covers all files in lib/.",
+    "compilerOptions": {
+        "lib": ["webworker", "dom", "es5", "node"],
+        "noEmit": true
+    },
+    "files": [
+        "./more-types.d.ts",
+        "./node_modules/@types/codemirror/codemirror-runmode.d.ts",
+
+        "fstar.global-object.ts",
+        "fstar.worker.utils.ts",
+        "fstar.smtdriver.ts",
+        "fstar.driver.ts",
+
+        "fstar.ide.utils.ts",
+        "fstar.client.utils.ts",
+
+        "fstar.cli.protocol.ts",
+        "fstar.cli.worker.ts",
+        "fstar.cli.client.ts",
+
+        "fstar.ide.protocol.ts",
+        "fstar.ide.worker.ts",
+        "fstar.ide.client.ts",
+        "fstar.ide.literate.client.ts"
+    ]
+}

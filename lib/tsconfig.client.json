@@ -1,0 +1,24 @@
+{
+    "extends": "./tsconfig.base.json",
+    "comment": "This configuration packages all files to be loaded using <script /> tags.",
+    "compilerOptions": {
+        "lib": ["dom", "es5"],
+        "outFile": "../build/js/lib/fstar.client.js",
+        "types" : ["underscore", "codemirror", "jquery", "mustache"]
+    },
+    "files": [
+        "./more-types.d.ts",
+        "./node_modules/@types/codemirror/codemirror-runmode.d.ts",
+
+        "fstar.global-object.ts",
+        "fstar.client.utils.ts",
+
+        "fstar.cli.protocol.ts",
+        "fstar.cli.client.ts",
+
+        "fstar.ide.utils.ts",
+        "fstar.ide.protocol.ts",
+        "fstar.ide.client.ts",
+        "fstar.ide.literate.client.ts"
+    ]
+}
