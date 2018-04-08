@@ -294,8 +294,11 @@ namespace FStar.IDE {
                     break;
                 case Protocol.WorkerMessageKind.RESPONSE:
                     const payload = msg.payload;
-                    this.routeMessage(payload["query-id"], payload.status, payload);
-                    this.callbacks.remove(payload["query-id"]);
+                    try {
+                        this.routeMessage(payload["query-id"], payload.status, payload);
+                    } finally {
+                        this.callbacks.remove(payload["query-id"]);
+                    }
                     break;
                 case Protocol.WorkerMessageKind.MESSAGE:
                     if (msg.payload["query-id"]) {
