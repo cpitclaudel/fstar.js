@@ -1,29 +1,16 @@
-"use strict";
-/* global _ $u */
+interface ErrorConstructor {
+    stackTraceLimit?: number;
+}
 
-if (Error && Error.hasOwnProperty("stackTraceLimit")) {
+if (Error.hasOwnProperty("stackTraceLimit")) {
     // Get larger stack traces in Chromium and NodeJS
     Error.stackTraceLimit = 50;
 }
 
-(function () {
-    var root;
+const _underscore: any = _;
+declare const $u: _.UnderscoreStatic | undefined;
 
-    if (typeof(global) !== "undefined") {
-        root = global;
-    } else if (typeof(window) !== "undefined") {
-        root = window;
-    } else if (typeof(self) !== "undefined") {
-        root = self;
-    }
-
-    if (typeof(root) !== "undefined") {
-        root.FStar = root.FStar || {};
-
-        if (typeof($u) !== "undefined") {
-            root.FStar._ = $u; // Sphinx renames _
-        } else if (typeof(_) !== "undefined") {
-            root.FStar._ = _;
-        }
-    }
-})();
+namespace FStar {
+    // Sphinx renames _
+    const _ = typeof($u) !== "undefined" ? $u : _underscore;
+}
