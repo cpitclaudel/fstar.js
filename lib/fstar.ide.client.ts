@@ -422,7 +422,7 @@ namespace FStar.IDE {
         private cancelPending() {
             this.snippets
                 .allInState(SnippetState.PENDING)
-                .reverse().map(_.bind(this.popOrForget, this));
+                .reverse().map(snippet => this.popOrForget(snippet));
         }
 
         public init(fcontents: string, args: string[]) {

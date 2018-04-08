@@ -234,7 +234,7 @@ namespace FStar.IDE.LiterateClient {
             this.clearErrors();
 
             let firstLocalRange: Range<Snippet> | undefined;
-            this.ui.$errorPanel.append(_.map(errors, _.bind(this.formatError, this)));
+            this.ui.$errorPanel.append(_.map(errors, err => this.formatError(err)));
             _.each(errors, (error: FStarError<Snippet>) => {
                 _.each(error.ranges, (range: Range<Snippet>) => {
                     if (firstLocalRange === undefined && range.snippet === this) {
@@ -357,7 +357,7 @@ namespace FStar.IDE.LiterateClient {
             $("body").addClass("fstar-literate-document")
                 .append([this.ui.$progressEchoArea, this.ui.$progressBar]);
 
-            this.client = new Client(fname, _.bind(this.onProgress, this));
+            this.client = new Client(fname, msg => this.onProgress(msg));
             this.snippets = this.prepareFStarSnippets();
             Instance.chainSnippets(this.snippets);
 
@@ -400,7 +400,7 @@ namespace FStar.IDE.LiterateClient {
             (cm as AnnotatedEditor).fstarSnippet.setActive(true);
         }
 
-        private onEditorBlur(cm: CodeMirror.Editor, _event: any) {
+        private onEditorBlur(cm: CodeMirror.Editor) {
             this.justBlurredEditor = (cm as AnnotatedEditor);
             (cm as AnnotatedEditor).fstarSnippet.setActive(false);
             window.setTimeout(function(this: any) { this.justBlurredEditor = null; }, 0); // FIXME: How can this work?
@@ -509,7 +509,7 @@ namespace FStar.IDE.LiterateClient {
             editor.on("beforeChange", Instance.onBeforeEditorChange);
             editor.on("changes", Instance.onEditorChanges);
             editor.on("focus", Instance.onEditorFocus);
-            editor.on("blur", _.bind(this.onEditorBlur, this));
+            editor.on("blur", cm => this.onEditorBlur(cm));
             Instance.collapseElidedBlocks(editor, text);
             ui.$progressBarElement.css("flex-grow", 1 + editor.getDoc().lineCount());
             ui.$progressBarElement.click(() => (editor as AnnotatedEditor).fstarSnippet.scrollIntoView());
@@ -526,7 +526,7 @@ namespace FStar.IDE.LiterateClient {
                 .append(ui.$statusLabel);
 
             const snippet = new Snippet(id, ui, editor, this.client, this);
-            ui.$submitButton.click(_.bind(this.submitClick, this, snippet));
+            ui.$submitButton.click(() => this.submitClick(snippet));
 
             return snippet;
         }
