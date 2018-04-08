@@ -24,8 +24,8 @@ namespace FStar.Driver {
         writeFile(fname: string, fcontents: string): void;
         setSMTSolver(ask: (query: string) => string, refresh: () => void): void;
         setChannelFlushers(stdout: (s: string) => void, stderr: (s: string) => void): void;
-        callMain(): void;
-        callMainUnsafe(): void;
+        callMain(): number;
+        callMainUnsafe(): number;
         repl: {
             init(fname: string, onMessage: (msg: string) => void): void;
             evalStr(query: string): string;
@@ -101,7 +101,7 @@ namespace FStar.Driver {
 
     export interface IDECallbacks {
         progress(msg: string | null): void;
-        message(msg: string): void;
+        message(msg: IDE.Protocol.FStarMessage): void;
     }
 
     // Initialize a new F* REPL in --ide mode, working on file ‘fname’ with
@@ -127,13 +127,13 @@ namespace FStar.Driver {
 
         // Run ‘query’ synchronously.  This is mostly for debugging purposes,
         // since F*'s --ide mode might become asynchronous some day.
-        public evalSync(query: object): string {
+        public evalSync(query: object): FStar.IDE.Protocol.FStarResponseMessage {
             return JSON.parse(this.engine.repl.evalStr(JSON.stringify(query)));
         }
 
         // Run ‘query’, passing the results to ‘callback’.  This currently calls
         // ‘callback’ immediately, but clients shouldn't rely on this.
-        public eval(query: object, callback: (response: string) => void) {
+        public eval(query: object, callback: (response: IDE.Protocol.FStarResponseMessage) => void) {
             callback(this.evalSync(query));
         }
 

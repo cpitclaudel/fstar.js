@@ -2,12 +2,18 @@ namespace FStar.IDE.Worker {
     import Protocol = FStar.IDE.Protocol;
     import Utils = FStar.WorkerUtils;
 
-    const messages = { // FIXME type safety
-        ready: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.READY),
-        progress: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.PROGRESS),
-        message: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.MESSAGE),
-        response: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.RESPONSE),
-        exit: FStar.WorkerUtils.postMessage(Protocol.WorkerMessageKind.EXIT)
+    const postMessage = (msg: Protocol.WorkerMessage) =>
+        Utils.assertDedicatedWorker().postMessage(msg);
+    const messages = {
+        ready: () =>
+            postMessage({ kind: Protocol.WorkerMessageKind.READY, payload: null }),
+        progress: (payload: string | null) =>
+            postMessage({ kind: Protocol.WorkerMessageKind.PROGRESS, payload }),
+        message: (payload: Protocol.WorkerMessagePayload) =>
+            postMessage({ kind: Protocol.WorkerMessageKind.MESSAGE, payload }),
+        response: (payload: Protocol.WorkerResponsePayload) =>
+            postMessage({ kind: Protocol.WorkerMessageKind.RESPONSE, payload }),
+        exit: () => postMessage({ kind: Protocol.WorkerMessageKind.EXIT, payload: null })
     };
 
     class Instance {

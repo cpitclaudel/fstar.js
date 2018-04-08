@@ -10,9 +10,11 @@
         "fstar.global-object.ts",
         "fstar.worker.utils.ts",
         "fstar.smtdriver.ts",
-        "fstar.driver.ts",
 
         "fstar.cli.protocol.ts",
+        "fstar.ide.protocol.ts",
+        "fstar.driver.ts",
+
         "fstar.cli.worker.ts"
     ]
 }

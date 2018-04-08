@@ -24,37 +24,29 @@ namespace FStar.CLI.Protocol {
         VERIFICATION_COMPLETE = "VERIFICATION_COMPLETE",
     }
 
-    export type WorkerProgressPayload = string;
-
     export interface WorkerProgressMessage {
         kind: WorkerMessageKind.PROGRESS;
-        payload: WorkerProgressPayload;
+        payload: string;
     }
-
-    export type WorkerReadyPayload = undefined;
 
     export interface WorkerReadyMessage {
         kind: WorkerMessageKind.READY;
-        payload: WorkerReadyPayload;
+        payload: null;
     }
-
-    export type WorkerStdoutPayload = string;
 
     export interface WorkerStdoutMessage {
         kind: WorkerMessageKind.STDOUT;
-        payload: WorkerStdoutPayload;
+        payload: string;
     }
-
-    export type WorkerStderrPayload = string;
 
     export interface WorkerStderrMessage {
         kind: WorkerMessageKind.STDERR;
-        payload: WorkerStderrPayload;
+        payload: string;
     }
 
     export interface WorkerVerificationCompleteMessage {
         kind: WorkerMessageKind.VERIFICATION_COMPLETE;
-        payload: undefined;
+        payload: number;
     }
 
     export type WorkerMessage =

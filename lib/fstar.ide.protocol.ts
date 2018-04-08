@@ -1,4 +1,34 @@
 namespace FStar.IDE.Protocol {
+    export enum FStarMessageKind {
+        MESSAGE = "message",
+        RESPONSE = "response",
+        PROTOCOL_INFO = "protocol-info"
+    }
+
+    export interface FStarMessageMessage {
+        kind: FStarMessageKind.MESSAGE;
+        "query-id"?: string;
+        level: string;
+        contents: any;
+    }
+
+    export interface FStarResponseMessage {
+        kind: FStarMessageKind.RESPONSE;
+        "query-id": string;
+        status: QueryStatus;
+        response: any;
+    }
+
+    export interface FStarProtocolInfoMessage {
+        kind: FStarMessageKind.PROTOCOL_INFO;
+        [k: string]: any;
+    }
+
+    export type FStarMessage =
+        FStarMessageMessage |
+        FStarResponseMessage |
+        FStarProtocolInfoMessage;
+
     export enum ClientMessageKind {
         INIT = "INIT",
         QUERY = "QUERY",
@@ -48,27 +78,22 @@ namespace FStar.IDE.Protocol {
 
     export interface WorkerProgressMessage {
         kind: WorkerMessageKind.PROGRESS;
-        payload: string;
+        payload: string | null;
     }
 
     export interface WorkerReadyMessage {
         kind: WorkerMessageKind.READY;
-        payload?: null;
+        payload: null;
     }
 
-    export interface WorkerResponsePayload {
-        "query-id": string;
-    }
+    export type WorkerMessagePayload = FStarMessageMessage;
 
     export interface WorkerMessageMessage {
         kind: WorkerMessageKind.MESSAGE;
-        payload: WorkerResponsePayload;
+        payload: WorkerMessagePayload;
     }
 
-    export interface WorkerResponsePayload {
-        "query-id": string;
-        status: QueryStatus;
-    }
+    export type WorkerResponsePayload = FStarResponseMessage;
 
     export interface WorkerResponseMessage {
         kind: WorkerMessageKind.RESPONSE;
@@ -77,7 +102,7 @@ namespace FStar.IDE.Protocol {
 
     export interface WorkerExitMessage {
         kind: WorkerMessageKind.EXIT;
-        payload: {};
+        payload: null;
     }
 
     export type WorkerMessage =

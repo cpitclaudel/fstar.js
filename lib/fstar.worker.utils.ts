@@ -39,11 +39,6 @@ namespace FStar.WorkerUtils {
         return (self as DedicatedWorkerGlobalScope);
     }
 
-    export function postMessage(kind: string) {
-        return (payload?: any): void =>
-            assertDedicatedWorker().postMessage({ kind, payload });
-    }
-
     export function loadBinaries() {
         self.importScripts("./fstar.core.js", "./z3smt2w.js");
     }

@@ -4,12 +4,19 @@ namespace FStar.CLI.Worker {
 
     export let CATCH_EXCEPTIONS = true; // Turn off to improve JS debugging.
 
+    const postMessage = (msg: Protocol.WorkerMessage) =>
+        Utils.assertDedicatedWorker().postMessage(msg);
     const messages = {
-        ready: Utils.postMessage(Protocol.WorkerMessageKind.READY),
-        progress: Utils.postMessage(Protocol.WorkerMessageKind.PROGRESS),
-        stdout: Utils.postMessage(Protocol.WorkerMessageKind.STDOUT),
-        stderr: Utils.postMessage(Protocol.WorkerMessageKind.STDERR),
-        verification_complete: Utils.postMessage(Protocol.WorkerMessageKind.VERIFICATION_COMPLETE)
+        ready: () =>
+            postMessage({ kind: Protocol.WorkerMessageKind.READY, payload: null }),
+        progress: (payload: string) =>
+            postMessage({ kind: Protocol.WorkerMessageKind.PROGRESS, payload }),
+        stdout: (payload: string) =>
+            postMessage({ kind: Protocol.WorkerMessageKind.STDOUT, payload }),
+        stderr: (payload: string) =>
+            postMessage({ kind: Protocol.WorkerMessageKind.STDERR, payload }),
+        verification_complete: (payload: number) =>
+            postMessage({ kind: Protocol.WorkerMessageKind.VERIFICATION_COMPLETE, payload })
     };
 
     class Instance {

@@ -12,15 +12,16 @@
         "fstar.global-object.ts",
         "fstar.worker.utils.ts",
         "fstar.smtdriver.ts",
+
+        "fstar.cli.protocol.ts",
+        "fstar.ide.protocol.ts",
         "fstar.driver.ts",
 
         "fstar.client.utils.ts",
 
-        "fstar.cli.protocol.ts",
         "fstar.cli.worker.ts",
         "fstar.cli.client.ts",
 
-        "fstar.ide.protocol.ts",
         "fstar.ide.worker.ts",
         "fstar.ide.client.ts",
         "fstar.ide.literate.client.ts"

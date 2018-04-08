@@ -279,7 +279,7 @@ namespace FStar.IDE {
                 case Protocol.WorkerMessageKind.MESSAGE:
                     if (msg.payload["query-id"]) {
                         // protocol-info messages don't have query IDs
-                        this.routeMessage(msg.payload["query-id"],
+                        this.routeMessage(msg.payload["query-id"]!,
                                           Protocol.QueryStatus.MESSAGE,
                                           msg.payload);
                     }
