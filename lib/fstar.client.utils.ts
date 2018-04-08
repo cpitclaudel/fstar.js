@@ -1,47 +1,47 @@
-"use strict";
-/* global CodeMirror FStar */
-/* exported FStarClientUtils */
+namespace FStar.ClientUtils {
+    const _ = FStar._;
+    export let DEBUG = true;
 
-FStar.ClientUtils = FStar.ClientUtils || {};
+    export function debug(...args: any[]) {
+        if (DEBUG) {
+            // tslint:disable-next-line: no-console
+            console.debug(...args);
+        }
+    }
 
-(function () {
-    var _ = FStar._;
-    var ClientUtils = FStar.ClientUtils;
-
-    ClientUtils.DEBUG = true;
-    ClientUtils.debug = function() {
-        ClientUtils.DEBUG && console.debug.apply(console, arguments);
-    };
-
-    var CM_DEFAULTS = {
+    const CM_DEFAULTS = {
         lineNumbers: true,
         theme: "tango",
         mode: "text/x-fstar"
     };
 
-    ClientUtils.setupEditor = function(parent, text, options) {
+    export function setupEditor(parent: HTMLElement, text: string, options?: CodeMirror.EditorConfiguration) {
         options = _.extend({}, CM_DEFAULTS, (options || {}), { value: text || "" });
         return CodeMirror(parent, options);
-    };
+    }
 
-    ClientUtils.highlightSnippet = function(snippet) {
-        var container = document.createElement("span");
+    export function highlightSnippet(snippet: string) {
+        const container = document.createElement("span");
         CodeMirror.runMode(snippet, "fstar", container);
         container.className = "cm-s-tango";
         return container.outerHTML;
-    };
+    }
 
-    ClientUtils.stripNewLines = function(text) {
+    export function stripNewLines(text: string) {
         return text.replace(/^[\r\n]+/, "").replace(/[\r\n]+$/, "");
-    };
+    }
 
-    ClientUtils.countLines = function(text) {
+    export function countLines(text: string) {
         return (text.match(/\n/g) || []).length;
-    };
+    }
 
-    ClientUtils.assert = function(condition, message) {
+    export function assert(condition: boolean | null | undefined, message?: string) {
         if (!condition) {
             throw (message || "assertion failed");
         }
-    };
-})();
+    }
+
+    export function assertNever(x: never): never {
+        throw new Error(`Unexpected value: ${x}`);
+    }
+}
