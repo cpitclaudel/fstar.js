@@ -335,7 +335,8 @@ namespace FStar.IDE.LiterateClient {
         }
 
         private submitSelf() {
-            if (this.previousSnippet == null) { // F* recomputes dependencies after each first push.
+            if (this.previousSnippet == null) {
+                // F* recomputes dependencies after each first push.
                 this.literateclient.updateContents();
             }
             this.proofState = null;

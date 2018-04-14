@@ -214,6 +214,12 @@ namespace FStar.IDE {
         smt_goals: PSGoal[];
     }
 
+    interface LookupLocation {
+        column: number;
+        line: number;
+        filename: string;
+    }
+
     export class Client<TSnippet extends BasicSnippet<TSnippet>> {
         private fname: string;
         private gensymState: number;
@@ -400,6 +406,16 @@ namespace FStar.IDE {
             snippet.setState(SnippetState.BUSY);
         }
 
+        // FIXME: requestedInfo should be an array of Enum values
+        private lookup(symbol: string, context: string | null,
+                       location: LookupLocation | null, requestedInfo: string[],
+                       callback: QueryCallback) {
+            const qid = this.gensym();
+            const args = { symbol, context, location, "requested-info": requestedInfo };
+            this.postQuery(Client.mkQuery(qid, "lookup", args));
+            this.callbacks.add(qid, callback);
+        }
+
         private assertCanPop(snippet: TSnippet) {
             Utils.assert(this.snippets.contains(snippet));
             Utils.assert(snippet === this.snippets.last());
@@ -485,6 +501,25 @@ namespace FStar.IDE {
             snippet.setState(SnippetState.PENDING);
             this.insertSnippet(snippet, parent);
             this.processPending();
+        }
+
+        // LATER: make these types more precise (ideally, rewrite the wiki page
+        // in Typescript)
+        public lookupAt(snippet: TSnippet, symbol: string, context: string | null,
+                        requestedInfo: string[], pos: { line: number, column: number } | null,
+                        fname: string | null, callback: QueryCallback) {
+            let location: LookupLocation | null = null;
+            if (pos && this.snippets.contains(snippet)) {
+                location = { line: snippet.idePrivateData.firstLine + pos.line,
+                             column: pos.column,
+                             filename: fname || this.fname };
+            }
+            this.lookup(symbol, context, location, requestedInfo, (status, data) => {
+                if (status === Protocol.QueryStatus.SUCCESS ||
+                    status === Protocol.QueryStatus.FAILURE) {
+                    callback(status, data.response);
+                }
+            });
         }
 
         private mayCancel(snippet: TSnippet): { success: boolean; reason?: string } {
