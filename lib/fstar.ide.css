@@ -345,6 +345,7 @@ limitations under the License. */
   font-variant: small-caps;
   padding: 0.2rem;
   margin: -0.5rem 0;
+  width: 0;
 }
 
 .fstar-ps-goal-conclusion {
