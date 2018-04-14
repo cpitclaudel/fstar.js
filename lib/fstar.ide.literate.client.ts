@@ -358,7 +358,9 @@ namespace FStar.IDE.LiterateClient {
         private client: Client<Snippet>;
         private justBlurredEditor: AnnotatedEditor | null;
 
-        private ui: { $progressBar: JQuery<HTMLElement>;
+        private ui: { $tooltip: JQuery<HTMLElement>;
+                      tooltipTimeout?: number;
+                      $progressBar: JQuery<HTMLElement>;
                       $progressEchoArea: JQuery<HTMLElement>;
                       progressEchoTimeout?: number };
 
@@ -368,11 +370,14 @@ namespace FStar.IDE.LiterateClient {
             this.justBlurredEditor = null;
 
             this.ui = {
+                $tooltip: $('<div class="fstar-tooltip">'),
                 $progressBar: $('<div class="fstar-progress-bar">'),
                 $progressEchoArea: $('<span class="fstar-progress-echo-area">')
             };
             $("body").addClass("fstar-literate-document")
-                .append([this.ui.$progressEchoArea, this.ui.$progressBar]);
+                .append([this.ui.$tooltip,
+                         this.ui.$progressEchoArea,
+                         this.ui.$progressBar]);
 
             this.client = new Client(fname, msg => this.onProgress(msg));
             this.snippets = this.prepareFStarSnippets();
@@ -387,6 +392,14 @@ namespace FStar.IDE.LiterateClient {
             if (snippet !== null) {
                 snippet.focus();
             }
+        }
+
+        public showTip(windowX: number, windowY: number, str: string) {
+            this.ui.$tooltip.text(str)
+                .css("top", windowY).css("left", windowX)
+                .stop(true, true).show();
+            this.ui.tooltipTimeout && window.clearTimeout(this.ui.tooltipTimeout);
+            this.ui.tooltipTimeout = window.setTimeout(() => this.ui.$tooltip.hide('fast'), 10000);
         }
 
         private static onSubmitKey(editor: CodeMirror.Editor & { fstarSnippet: Snippet }) {

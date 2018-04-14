@@ -336,6 +336,19 @@ html {
   opacity: 0.5;
 }
 
+.fstar-tooltip {
+  background: #2e3436;
+  border-radius: 0.25rem;
+  color: #eeeeec;
+  font-family: "Fira Code";
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.35rem 0.45rem;
+  position: fixed;
+  white-space: pre;
+  z-index: 1000;
+}
+
 .fstar-literate-document::after {
   content: " ";
   display: block;
