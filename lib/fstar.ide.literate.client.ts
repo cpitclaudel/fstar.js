@@ -228,12 +228,10 @@ namespace FStar.IDE.LiterateClient {
             return $errorSpan;
         }
 
-        private static deleteMarker<T, K extends keyof T>(obj: T, field: K) {
-            ClientUtils.assert((obj[field] as any).clear);
-            if (obj[field]) {
-                (obj[field] as any).clear();
-                delete obj[field];
-            }
+        private static deleteMarker<K extends string>(obj: { [s in K]?: CodeMirror.TextMarker }, field: K) {
+            const marker: CodeMirror.TextMarker | undefined = obj[field];
+            marker && marker.clear();
+            delete obj[field];
         }
 
         public clearErrors() {
