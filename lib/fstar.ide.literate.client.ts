@@ -249,6 +249,7 @@ namespace FStar.IDE.LiterateClient {
         // }
 
         public setActive(active: boolean) {
+            active || this.ui.$docBox.hide();
             this.ui.$progressBarElement.toggleClass("fstar-active-progress-bar-element", active);
         }
 
