@@ -83,7 +83,7 @@ namespace FStar.IDE.LiterateClient {
 
         private id: number;
         private ui: SnippetUI;
-        private lastToken: CodeMirror.Token | null;
+        private lastWordRange: CodeMirror.Range | null;
         private editor: AnnotatedEditor;
         private errors: Array<FStarError<Snippet>>;
         private proofState: ProofState<Snippet> | null;
@@ -98,7 +98,7 @@ namespace FStar.IDE.LiterateClient {
                     client: Client<Snippet>, literateclient: Instance) {
             this.id = id;
             this.ui = ui;
-            this.lastToken = null;
+            this.lastWordRange = null;
             this.editor = editor as AnnotatedEditor;
             this.editor.on("cursorActivity", cm => this.onCursorActivity(cm));
             this.editor.fstarSnippet = this;
@@ -165,33 +165,57 @@ namespace FStar.IDE.LiterateClient {
                 .append($('<span class="fstar-sig-type">').html(data.type));
         }
 
+        private showDocs(spans: Array<JQuery<Element>> | null) {
+            this.ui.$docBox.empty().append(spans || []).toggle(spans != null);
+        }
+
         // FIXME improve response type
-        private showDocs(status: Protocol.QueryStatus, data: any) {
-            const $docBox = this.ui.$docBox.empty();
+        private showLookupResults(status: Protocol.QueryStatus, data: any) {
             if (status === Protocol.QueryStatus.SUCCESS) {
-                const docs = data.documentation;
-                $docBox.append(Snippet.formatSignature(data))
-                    .append(docs ? $('<span class="fstar-docs-docstring">').text(docs) : [])
-                    .show();
+                const docs = [Snippet.formatSignature(data)];
+                if (data.documentation) {
+                    docs.push($('<span class="fstar-docs-docstring">').text(data.documentation));
+                }
+                this.showDocs(docs);
             } else {
-                $docBox.hide();
+                this.showDocs(null);
+            }
+        }
+
+        private findSymbolAt(cm: CodeMirror.Editor, pos: CodeMirror.Position) {
+            const prevWordChars = (cm as any).getHelper(pos, "wordChars");
+            try {
+                const wordChars = /[\w_'.]/;
+                const line = cm.getDoc().getLine(pos.line);
+                CodeMirror.registerHelper("wordChars", "fstar", wordChars);
+                const after = pos.ch < line.length && /\w/.test(line.charAt(pos.ch));
+                const realPos = { line: pos.line, ch: pos.ch, sticky: after ? "after" : "before" };
+                return cm.findWordAt(realPos);
+            } finally {
+                CodeMirror.registerHelper("wordChars", "fstar", prevWordChars);
             }
         }
 
         private onCursorActivity(cm: CodeMirror.Editor) {
             ClientUtils.assert(cm === this.editor);
+            if (this.client.busy()) {
+                this.showDocs(null);
+                return;
+            }
+
             const pos = cm.getDoc().getCursor();
-            const token = cm.getTokenAt(pos);
-            if (!_.isEqual(token, this.lastToken)) {
-                if (this.client.busy() || (token.type !== "variable" && token.type !== "type")) {
+            const wordRange = this.findSymbolAt(cm, pos);
+            if (!_.isEqual(wordRange, this.lastWordRange)) {
+                const word = cm.getDoc().getRange(wordRange.anchor, wordRange.head);
+                if (!/^[A-Za-z0-9._']+$/.test(word)) {
                     this.ui.$docBox.hide();
                 } else {
                     const requestedInfo = ["type", "documentation"];
-                    this.client.lookupAt(this, token.string, null, requestedInfo,
+                    this.client.lookupAt(this, word, null, requestedInfo,
                                          { line: pos.line, column: pos.ch }, null,
-                                         (status, data) => this.showDocs(status, data));
+                                         (status, data) => this.showLookupResults(status, data));
                 }
-                this.lastToken = token;
+                this.lastWordRange = wordRange;
             }
         }
 
