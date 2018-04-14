@@ -67,6 +67,7 @@ namespace FStar.IDE.LiterateClient {
         $controlPanel: JQuery<HTMLElement>;
         $errorPanel: JQuery<HTMLElement>;
         $proofStatePanel: JQuery<HTMLElement>;
+        $docBox: JQuery<HTMLElement>;
         $complaintBox: JQuery<HTMLElement>;
         $statusLabel: JQuery<HTMLElement>;
         $submitButton: JQuery<HTMLElement>;
@@ -82,6 +83,7 @@ namespace FStar.IDE.LiterateClient {
 
         private id: number;
         private ui: SnippetUI;
+        private lastToken: CodeMirror.Token | null;
         private editor: AnnotatedEditor;
         private errors: Array<FStarError<Snippet>>;
         private proofState: ProofState<Snippet> | null;
@@ -96,7 +98,9 @@ namespace FStar.IDE.LiterateClient {
                     client: Client<Snippet>, literateclient: Instance) {
             this.id = id;
             this.ui = ui;
+            this.lastToken = null;
             this.editor = editor as AnnotatedEditor;
+            this.editor.on("cursorActivity", cm => this.onCursorActivity(cm));
             this.editor.fstarSnippet = this;
             this.errors = [];
             this.proofState = null;
@@ -153,6 +157,72 @@ namespace FStar.IDE.LiterateClient {
             this.ui.$top[0].scrollIntoView();
             this.editor.focus();
         }
+
+        // FIXME type
+        private static formatSignature(data: any) {
+            return $('<span class="fstar-docs-signature">')
+                .append($('<span class="fstar-sig-name">').text(data.name))
+                .append($('<span class="fstar-sig-type">').html(data.type));
+        }
+
+        // FIXME improve response type
+        private showDocs(status: Protocol.QueryStatus, data: any) {
+            const $docBox = this.ui.$docBox.empty();
+            if (status === Protocol.QueryStatus.SUCCESS) {
+                const docs = data.documentation;
+                $docBox.append(Snippet.formatSignature(data))
+                    .append(docs ? $('<span class="fstar-docs-docstring">').text(docs) : [])
+                    .show();
+            } else {
+                $docBox.hide();
+            }
+        }
+
+        private onCursorActivity(cm: CodeMirror.Editor) {
+            ClientUtils.assert(cm === this.editor);
+            const pos = cm.getDoc().getCursor();
+            const token = cm.getTokenAt(pos);
+            if (!_.isEqual(token, this.lastToken)) {
+                if (this.client.busy() || (token.type !== "variable" && token.type !== "type")) {
+                    this.ui.$docBox.hide();
+                } else {
+                    const requestedInfo = ["type", "documentation"];
+                    this.client.lookupAt(this, token.string, null, requestedInfo,
+                                         { line: pos.line, column: pos.ch }, null,
+                                         (status, data) => this.showDocs(status, data));
+                }
+                this.lastToken = token;
+            }
+        }
+
+        // LATER
+        // this.ui.$editor.mousemove(evt => this.mousemove(evt));
+        //
+        // private editorPosAt(evt: JQuery.Event<HTMLElement>) {
+        //     if (evt.target.tagName !== "SPAN" || !/\bcm-/.test(evt.target.className)) {
+        //         return null;
+        //     }
+        //
+        //     // Use average locations rather than ‘evt.pageX’: ‘evt.pageX’
+        //     // can fall outside of the token corresponding to ‘evt.target’.
+        //     const {left, right, top, bottom} = evt.target.getBoundingClientRect();
+        //     const coords = { left: (left + right) / 2,
+        //                      top: (top + bottom) / 2 };
+        //     return this.editor.coordsChar(coords, 'window');
+        // }
+        //
+        // private mousemove(evt: JQuery.Event<HTMLElement>) {
+        //     if (!this.client.busy()) {
+        //         const pos = this.editorPosAt(evt);
+        //         if (pos !== null && !(pos as any).outside) {
+        //             const token = this.editor.getTokenAt(pos);
+        //             const requestedInfo = ["type", "doc"];
+        //             this.client.lookupAt(this, token.string, null, requestedInfo,
+        //                                  { line: pos.line, column: pos.ch }, null,
+        //                                  (status, data) => this.showDocs(status, data));
+        //         }
+        //     }
+        // }
 
         public setActive(active: boolean) {
             this.ui.$progressBarElement.toggleClass("fstar-active-progress-bar-element", active);
@@ -523,6 +593,7 @@ namespace FStar.IDE.LiterateClient {
                 $controlPanel: $('<div class="fstar-control-panel">'),
                 $errorPanel: $('<div class="fstar-error-panel">'),
                 $proofStatePanel: $('<div class="fstar-proof-state-panel">'),
+                $docBox: $('<span class="fstar-snippet-docs">'),
                 $complaintBox: $('<span class="fstar-snippet-complaint">'),
                 $statusLabel: $('<span class="fstar-snippet-status">'),
                 $submitButton: $('<span class="fstar-snippet-submit">', { role: "button" }),
@@ -549,11 +620,13 @@ namespace FStar.IDE.LiterateClient {
 
             ui.$submitButton.text("typecheck this");
             ui.$controlPanel
-                .append(ui.$errorPanel)
-                .append(ui.$proofStatePanel)
-                .append(ui.$complaintBox)
                 .append(ui.$submitButton)
-                .append(ui.$statusLabel);
+                .append(ui.$statusLabel)
+                .append(ui.$complaintBox)
+                .append(ui.$docBox)
+                .append($("<hr />"))
+                .append(ui.$errorPanel)
+                .append(ui.$proofStatePanel);
 
             const snippet = new Snippet(id, ui, editor, this.client, this);
             ui.$submitButton.click(() => this.submitClick(snippet));
