@@ -16,10 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. */
 
-html {
-    font-size: initial !important;
-}
-
 .fstar-standalone-editor {
     margin: 0.5rem 0;
 }
@@ -204,6 +200,7 @@ html {
     border-width: 1px 1px 0 0;
     bottom: 1.5rem;
     color: #ce5c00;
+    display: none;
     font-size: 0.75rem;
     font-weight: bold;
     left: 0;
