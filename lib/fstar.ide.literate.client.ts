@@ -645,13 +645,12 @@ namespace FStar.IDE.LiterateClient {
 
             ui.$submitButton.text("typecheck this");
             ui.$controlPanel
+                .append(ui.$errorPanel)
+                .append(ui.$proofStatePanel)
                 .append(ui.$submitButton)
                 .append(ui.$statusLabel)
                 .append(ui.$complaintBox)
-                .append(ui.$docBox)
-                .append($("<hr />"))
-                .append(ui.$errorPanel)
-                .append(ui.$proofStatePanel);
+                .append(ui.$docBox);
 
             const snippet = new Snippet(id, ui, editor, this.client, this);
             ui.$submitButton.click(() => this.submitClick(snippet));
