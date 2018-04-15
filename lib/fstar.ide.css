@@ -50,7 +50,8 @@ limitations under the License. */
 .fstar-ps-goal-conclusion,
 .fstar-ps-goal-hyp-type,
 .fstar-progress-echo-area,
-.fstar-snippet-docs {
+.fstar-snippet-docs,
+.fstar-tooltip {
     font-family: "Fira Code", "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
 }
 
@@ -363,7 +364,6 @@ limitations under the License. */
   background: #2e3436;
   border-radius: 0.25rem;
   color: #eeeeec;
-  font-family: "Fira Code";
   font-size: 0.75rem;
   line-height: 1rem;
   padding: 0.35rem 0.45rem;
