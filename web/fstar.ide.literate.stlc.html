@@ -1,0 +1,1169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.13.1: http://docutils.sourceforge.net/" />
+<title>Case study: simply-typed lambda-calculus</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"></script>
+
+<link rel="stylesheet" href="./fstar.js/fstar.ide.css" />
+<link rel="stylesheet" href="./fstar.js/cm.tango.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.css" integrity="sha256-I8NyGs4wjbMuBSUE40o55W6k6P7tu/7G28/JGUUYCIs=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css" type="text/css" />
+<style type="text/css">
+  html p {
+    margin-bottom: 1rem;
+}
+
+.exercise {
+    background: #eeeeee;
+    margin-bottom: 1rem;
+    padding: 1rem;
+}
+
+.exercise > :last-child,
+.solution > :last-child,
+.rst-content .admonition > :last-child {
+    margin-bottom: 0 !important;
+}
+
+.exercise-header, .solution-header {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.exercise-label, .solution-label {
+}
+
+.exercise-title, .solution-title {
+    float: right;
+    font-style: italic;
+}
+
+.exercise-body, .solution-body {
+    clear: both;
+}
+
+/* .solution-body:not(:hover):not(.fstar-clear-solution) * { */
+/*     color: transparent !important; */
+/* } */
+
+.fstar-standalone-editor-link-box {
+    margin-top: -0.5rem;
+    text-align: right;
+}
+
+.fstar-standalone-editor-link {
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+/* FIXME only include when using rtd theme */
+.rst-content .admonition-fixme { /* Copied from RTD theme */
+    background: #e7f2fa;
+    line-height: 24px;
+    margin-bottom: 24px;
+    padding: 12px;
+}
+
+.admonition-fixme {
+    display: none;
+}
+
+.fstar-remote-editor .editor .CodeMirror {
+    height: 20rem !important;
+    width: 100%;
+}
+
+.fstar-remote-editor .control-panel {
+    margin-top: 0.5rem;
+    text-align: right;
+    width: 100%;
+}
+
+.fstar-remote-editor .run,
+.fstar-remote-editor .stdout,
+.fstar-remote-editor .editor .CodeMirror {
+    font-family: "Fira Code", "Ubuntu Mono", "Consolas", "Monaco", "Inconsolata", "Source Code Pro", monospace;
+}
+
+.fstar-remote-editor .run {
+    font-size: 1rem;
+    min-width: 7.5rem;
+}
+
+.fstar-remote-editor .stdout, .fstar-standalone-editor .stdout {
+    background: black;
+    box-sizing: border-box;
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 0;
+    margin-top: 0.5rem;
+    min-height: 3rem;
+    padding: 0.5rem;
+    white-space: pre-wrap;
+    width: 100%;
+}
+
+/* Fira code definitions */
+@font-face{
+    font-family: 'Fira Code';
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Light.eot');
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Light.eot') format('embedded-opentype'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff2/FiraCode-Light.woff2') format('woff2'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff/FiraCode-Light.woff') format('woff'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/ttf/FiraCode-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face{
+    font-family: 'Fira Code';
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Regular.eot');
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Regular.eot') format('embedded-opentype'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff2/FiraCode-Regular.woff2') format('woff2'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff/FiraCode-Regular.woff') format('woff'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/ttf/FiraCode-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face{
+    font-family: 'Fira Code';
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Medium.eot');
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Medium.eot') format('embedded-opentype'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff2/FiraCode-Medium.woff2') format('woff2'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff/FiraCode-Medium.woff') format('woff'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/ttf/FiraCode-Medium.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face{
+    font-family: 'Fira Code';
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Bold.eot');
+    src: url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/eot/FiraCode-Bold.eot') format('embedded-opentype'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff2/FiraCode-Bold.woff2') format('woff2'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/woff/FiraCode-Bold.woff') format('woff'),
+         url('https://cdn.rawgit.com/tonsky/FiraCode/1.205/distr/ttf/FiraCode-Bold.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+</style>
+</head>
+<body>
+<div class="document" id="case-study-simply-typed-lambda-calculus">
+<h1 class="title">Case study: simply-typed lambda-calculus</h1>
+
+<pre class="code fstar literal-block">
+module STLC
+</pre>
+<div class="admonition admonition-fixme">
+<p class="first admonition-title">FIXME (Cătălin)</p>
+<p class="last">Any way I could have imported the existing code here without duplicating
+it? Without a way to do this maintaining this document and keeping it
+consistent will be a nightmare.</p>
+</div>
+<p>We now look at a larger case study: proving the soundness of a
+type-checker for the simply-typed <span class="math">\(\lambda\)</span>-calculus (STLC). If
+you're not familiar with STLC, you can have a look at the <a class="reference external" href="http://www.cis.upenn.edu/~bcpierce/sf/current/Stlc.html">Software
+Foundations book</a> for a gentle introduction given by the textual
+explanations (you can ignore the Coq parts there). The formalization and
+proof here closely follows the one in <a class="reference external" href="http://www.cis.upenn.edu/~bcpierce/sf/current/StlcProp.html">Software Foundations</a>. Our
+proofs are, however, shorter and much more readable than Coq proofs.</p>
+<div class="section" id="syntax">
+<h1>Syntax</h1>
+<p>We represent STLC types by the F* inductive datatype <tt class="docutils literal">ty</tt>.</p>
+<pre class="code fstar literal-block">
+type ty =
+  | TBool  : ty
+  | TArrow : tin:ty -&gt; tout:ty -&gt; ty
+
+type var = int
+</pre>
+<p>We consider Booleans as the only base type (<tt class="docutils literal">TBool</tt>). Function types
+are represented by the <tt class="docutils literal">TArrow</tt> constructor taking two type arguments.
+For instance we write <tt class="docutils literal">TArrow TBool TBool</tt> for the type of functions
+taking a Boolean argument and returning a Boolean result. This would be
+written as <tt class="docutils literal">bool <span class="pre">-&gt;</span> bool</tt> in F* syntax, and
+<span class="math">\(\mathsf{bool} \to \mathsf{bool}\)</span> in paper notation.</p>
+<p>We represent the expressions of STLC by the datatype <tt class="docutils literal">exp</tt>.</p>
+<pre class="code fstar literal-block">
+type exp =
+  | EVar   : v:var -&gt; exp
+  | EApp   : fn:exp -&gt; arg:exp -&gt; exp
+  | EAbs   : v:var -&gt; vty:ty -&gt; body:exp -&gt; exp
+  | ETrue  : exp
+  | EFalse : exp
+  | EIf    : test:exp -&gt; btrue:exp -&gt; bfalse:exp -&gt; exp
+</pre>
+<p>Variables are represented as integer &quot;names&quot; decorated by the
+constructor <tt class="docutils literal">EVar</tt>. Variables are &quot;bound&quot; by lambda abstractions
+(<tt class="docutils literal">EAbs</tt>). For instance the identity function on Booleans is written
+<tt class="docutils literal">EAbs 0 TBool (EVar 0)</tt>. In paper notation one would write this
+function as <span class="math">\((\lambda x:\mathsf{bool}.~x)\)</span>. The type annotation on
+the argument (<tt class="docutils literal">TBool</tt>) allows for very simple type-checking. We are
+not considering type inference here, to keep things simple. The
+expression that applies the identity function to the <tt class="docutils literal">ETrue</tt> constant
+is written</p>
+<pre class="code fstar literal-block">
+let stlc_app_id_to_true = EApp (EAbs 0 TBool (EVar 0)) ETrue
+</pre>
+<p>(in paper notation <span class="math">\((\lambda x:\mathsf{bool}.~x)~\mathsf{true}\)</span>).</p>
+<p>The language also has a conditional construct (if-then-else). For
+instance, the Boolean &quot;not&quot; function can be written as</p>
+<pre class="code fstar literal-block">
+let stlc_not = EAbs 0 TBool (EIf (EVar 0) EFalse ETrue)
+</pre>
+<p>(in paper notation
+<span class="math">\(\lambda x:\mathsf{bool}.~\mathsf{if }~x~\mathsf{ then~false~else~true}\)</span>).</p>
+</div>
+<div class="section" id="operational-semantics">
+<h1>Operational semantics</h1>
+<p>We define a standard small-step call-by-value interpreter for STLC. The
+final result of successfully evaluating an expression is called a
+<em>value</em>. We postulate that functions and the Boolean constants are
+values by defining <tt class="docutils literal">is_value</tt>, a boolean predicate on expressions (a
+total function):</p>
+<pre class="code fstar literal-block">
+val is_value : exp -&gt; Tot bool
+let is_value e =
+  match e with
+  | EAbs _ _ _
+  | ETrue
+  | EFalse     -&gt; true
+  | _          -&gt; false
+</pre>
+<p>The <tt class="docutils literal">EAbs</tt>, <tt class="docutils literal">ETrue</tt>, and <tt class="docutils literal">EFalse</tt> cases share the same
+right-hand-side (<tt class="docutils literal">true</tt>), which is a way to prevent duplication in
+definitions.</p>
+<p>In order to give a semantics to function applications we define a
+function <tt class="docutils literal">subst x e e'</tt> that substitutes <tt class="docutils literal">x</tt> with <tt class="docutils literal">e</tt> in <tt class="docutils literal">e'</tt>:</p>
+<pre class="code fstar literal-block">
+val subst : int -&gt; exp -&gt; exp -&gt; Tot exp
+let rec subst x e e' =
+  match e' with
+  | EVar x' -&gt; if x = x' then e else e'
+  | EAbs x' t e1 -&gt;
+      EAbs x' t (if x = x' then e1 else (subst x e e1))
+  | EApp e1 e2 -&gt; EApp (subst x e e1) (subst x e e2)
+  | ETrue -&gt; ETrue
+  | EFalse -&gt; EFalse
+  | EIf e1 e2 e3 -&gt; EIf (subst x e e1) (subst x e e2) (subst x e e3)
+</pre>
+<p>We traverse the expression and when we reach a variable <tt class="docutils literal">(EVar x')</tt> we
+check whether this is the variable <tt class="docutils literal">x</tt> we want to substitute, and if
+it is we replace it by <tt class="docutils literal">e</tt>. For lambda abstractions <tt class="docutils literal">(EAbs x' t e1)</tt>
+we only substitute inside the body <tt class="docutils literal">e1</tt> if <tt class="docutils literal">x</tt> and <tt class="docutils literal">x'</tt> are
+different; if they are the same we leave the body unchanged. The reason
+for this is that the <tt class="docutils literal">x</tt> in <tt class="docutils literal">e1</tt> is bound by the abstraction: it is
+a new, local name that just happens to be spelled the same as some
+global name <tt class="docutils literal">x</tt>. The global <tt class="docutils literal">x</tt> is no longer accessible in this
+scope, since it is shadowed by the local <tt class="docutils literal">x</tt>. The other cases are
+straightforward.</p>
+<blockquote>
+<strong>Note for experts</strong>: Because we will only reduce closed
+expressions, where all variables are bound by previous lambdas, we
+will only ever substitute closed expressions <tt class="docutils literal">e</tt>, and this naive
+definition of substitution is good enough. Substitution would become
+trickier to define or the representation of variables would have to
+change if we were considering the case where <tt class="docutils literal">e</tt>, the expression
+replacing a variable in some other expression, may itself contain
+free variables.</blockquote>
+<p>Given the definition of values and of substitution we can now define a
+small-step interpreter, as a function <tt class="docutils literal">step</tt> that takes an expression
+<tt class="docutils literal">e</tt> and it either returns the expression to which <tt class="docutils literal">e</tt> reduces in a
+single step, or it returns <tt class="docutils literal">None</tt> in case of an error (all errors in
+this language are typing errors, and will be prevented statically by the
+type system).</p>
+<pre class="code fstar literal-block">
+val step : exp -&gt; Tot (option exp)
+  let rec step e =
+  match e with
+  | EApp e1 e2 -&gt;
+      if is_value e1 then
+        if is_value e2 then
+          match e1 with
+          | EAbs x t e' -&gt; Some (subst x e2 e')
+          | _           -&gt; None
+        else
+          match (step e2) with
+          | Some e2' -&gt; Some (EApp e1 e2')
+          | None     -&gt; None
+      else
+        (match (step e1) with
+        | Some e1' -&gt; Some (EApp e1' e2)
+        | None     -&gt; None)
+  | EIf e1 e2 e3 -&gt;
+      if is_value e1 then
+        match e1 with
+        | ETrue   -&gt; Some e2
+        | EFalse  -&gt; Some e3
+        | _       -&gt; None
+      else
+        (match (step e1) with
+        | Some e1' -&gt; Some (EIf e1' e2 e3)
+        | None     -&gt; None)
+  | _ -&gt; None
+</pre>
+<p>We execute an application expression <tt class="docutils literal">EApp e1 e2</tt> in multiple steps by
+first reducing <tt class="docutils literal">e1</tt> to a value, then reducing <tt class="docutils literal">e2</tt> to a value
+(following a <em>call-by-value</em> evaluation order), and if additionally
+<tt class="docutils literal">e1</tt> is an abstraction <tt class="docutils literal">EAbs x t e'</tt>we continue by substituting
+the formal argument <tt class="docutils literal">x</tt> by the actual argument <tt class="docutils literal">e2</tt>. If not we
+signal a dynamic typing error (a non-functional value is applied to
+arguments) by returning <tt class="docutils literal">None</tt>. For <tt class="docutils literal">EIf e1 e2 e3</tt> we first reduce
+the guard <tt class="docutils literal">e1</tt>: if the guard reduces to <tt class="docutils literal">true</tt> then we continue with
+<tt class="docutils literal">e2</tt>, if the guard reduces to <tt class="docutils literal">false</tt> we continue with <tt class="docutils literal">e3</tt>, and
+if the guard reduces to something else (e.g. a function) we report a
+dynamic typing error. The <tt class="docutils literal">None <span class="pre">-&gt;</span> None</tt> cases simply propagate errors
+to the top level.</p>
+<pre class="code fstar literal-block">
+let _ = assert (step (EApp (EAbs 0 TBool (EVar 0)) ETrue) = Some ETrue)
+let _ = assert (step (EApp ETrue ETrue) = None)
+</pre>
+</div>
+<div class="section" id="type-checker">
+<h1>Type-checker</h1>
+<p>In order to assign a type to a term, we need to know what assumptions we
+should make about the types of its free variables. So typing happens
+with respect to a typing environment—a mapping from the variables in
+scope to their types. We represent such partial maps as functions taking
+an integer variable name and returning an optional type:</p>
+<pre class="code fstar literal-block">
+type env = int -&gt; Tot (option ty)
+</pre>
+<p>We start type-checking closed terms in the empty environment, i.e.
+initially no variables are in scope.</p>
+<pre class="code fstar literal-block">
+val empty : env
+let empty = fun _ -&gt; None
+</pre>
+<p>When we move under a binder we extend the typing environment.</p>
+<pre class="code fstar literal-block">
+val extend : env -&gt; int -&gt; ty -&gt; Tot env
+let extend g x t = fun x' -&gt; if x = x' then Some t else g x'
+</pre>
+<p>For instance we type-check <tt class="docutils literal">EAbs x t e</tt> in typing environment <tt class="docutils literal">g</tt> by
+first type-checking the body <tt class="docutils literal">e</tt> in the environment <tt class="docutils literal">extend g x t</tt>.</p>
+<p>The type-checker is a total function taking an environment <tt class="docutils literal">g</tt> and an
+expression <tt class="docutils literal">e</tt> and producing either the type of <tt class="docutils literal">e</tt> or <tt class="docutils literal">None</tt> if
+<tt class="docutils literal">e</tt> is not well-typed.</p>
+<pre class="code fstar literal-block">
+val typing : env -&gt; exp -&gt; Tot (option ty)
+let rec typing g e =
+  match e with
+  | EVar x -&gt; g x
+  | EAbs x t e1 -&gt;
+      (match typing (extend g x t) e1 with
+      | Some t' -&gt; Some (TArrow t t')
+      | None    -&gt; None)
+  | EApp e1 e2 -&gt;
+      (match typing g e1, typing g e2 with
+      | Some (TArrow t11 t12), Some t2 -&gt; if t11 = t2 then Some t12 else None
+      | _                    , _       -&gt; None)
+  | ETrue  -&gt; Some TBool
+  | EFalse -&gt; Some TBool
+  | EIf e1 e2 e3 -&gt;
+      (match typing g e1, typing g e2, typing g e3 with
+      | Some TBool, Some t2, Some t3 -&gt; if t2 = t3 then Some t2 else None
+      | _         , _      , _       -&gt; None)
+</pre>
+<p>Variables are simply looked up in the environment. For abstractions
+<tt class="docutils literal">EAbs x t e1</tt> we type-check the body <tt class="docutils literal">e1</tt> under the environment
+<tt class="docutils literal">extend g x t</tt>, as explained above. If that succeeds and produces a
+type <tt class="docutils literal">t'</tt>, then the whole abstraction is given type <tt class="docutils literal">TArrow t t'</tt>.
+For applications <tt class="docutils literal">EApp e1 e2</tt> we type-check <tt class="docutils literal">e1</tt> and <tt class="docutils literal">e2</tt>
+separately, and if <tt class="docutils literal">e1</tt> has a function type <tt class="docutils literal">TArrow t11 t12</tt> and
+<tt class="docutils literal">e2</tt> has type <tt class="docutils literal">t11</tt>, then the whole application has type <tt class="docutils literal">t12</tt>.
+<tt class="docutils literal">ETrue</tt> and <tt class="docutils literal">EFalse</tt> have type <tt class="docutils literal">TBool</tt>. For conditionals, we
+require that the guard has type <tt class="docutils literal">TBool</tt> and the two branches have the
+same type, which is also the type of the conditional.</p>
+</div>
+<div class="section" id="soundness-proof">
+<h1>Soundness proof</h1>
+<div class="admonition admonition-fixme">
+<p class="first admonition-title">FIXME (Cătălin)</p>
+<p>I generally find giving people finished proofs uninformative and unhelpful.</p>
+<p class="last">This seems like something to do from scratch in an emacs buffer. Trying
+to capture that kind of interaction in the current format seems very
+hard.</p>
+</div>
+<p>We prove progress and preservation for STLC. The <strong>progress</strong> theorem
+tells us that closed, well-typed terms do not produce (immediate)
+dynamic typing errors: either a well-typed term is a value, or it can
+take an evaluation step. The proof is a relatively straightforward
+induction.</p>
+<pre class="code fstar literal-block">
+val progress : e:exp -&gt; Lemma
+      (requires (Some? (typing empty e)))
+      (ensures (is_value e \/ (Some? (step e))))
+let rec progress e =
+  match e with
+  | EApp e1 e2 -&gt; progress e1; progress e2
+  | EIf e1 e2 e3 -&gt; progress e1; progress e2; progress e3
+  | _ -&gt; ()
+</pre>
+<p>Variables are not well-typed in the empty environment, so the theorem
+holds vacuously for variables. Boolean constants and abstractions are
+values, so the theorem holds trivially for these. All these simple cases
+are proved automatically by F*. For the remaining cases we need to use
+the induction hypothesis, but otherwise the proofs are fully automated.
+Under the hood F* and Z3 are doing quite a bit of work though.</p>
+<p>In case <tt class="docutils literal">e = (EApp e1 e2)</tt> F* and Z3 automate the following intuitive
+argument: We case split on the first instance of the induction
+hypothesis <tt class="docutils literal">(is_value e1 \/ (Some? (step <span class="pre">e1)))</span></tt>.</p>
+<ul class="simple">
+<li>If <tt class="docutils literal">e1</tt> steps to <tt class="docutils literal">e1'</tt> then, by the definition of <tt class="docutils literal">step</tt>,
+<tt class="docutils literal">(EApp e1 e2)</tt> steps to <tt class="docutils literal">(EApp e1' e2)</tt>.</li>
+<li>If <tt class="docutils literal">e1</tt> is a value, we case split on the second induction
+hypothesis instance, <tt class="docutils literal">(is_value e2 \/ (Some? (step <span class="pre">e2)))</span></tt>.</li>
+<li>If <tt class="docutils literal">e2</tt> steps to <tt class="docutils literal">e2'</tt> then <tt class="docutils literal">(EApp e1 e2)</tt> steps to
+<tt class="docutils literal">(EApp e1 e2')</tt>, since <tt class="docutils literal">e1</tt> is a value.</li>
+<li>If <tt class="docutils literal">e2</tt> is also a value, then we need to obtain that <tt class="docutils literal">e1</tt> has a
+function type and from this that it is an abstraction. Expression
+<tt class="docutils literal">e1</tt> has a function type because, by the definition of <tt class="docutils literal">typing</tt>,
+an application is well-typed only when the first expression is a
+function. The remaining step is usually done as a separate &quot;canonical
+forms&quot; lemma, stating that any value that has a function type is
+actually an abstraction. Z3 can prove this fact automatically from
+the definitions of <tt class="docutils literal">typing</tt> and <tt class="docutils literal">is_value</tt>.</li>
+</ul>
+<p>The intuitive proof of the <tt class="docutils literal">EIf</tt> case is similar.</p>
+<!-- ::
+
+Using the *experimental* support for automatic induction ([#auto-ind]),
+the proof above can be written as just:
+
+.. code::
+
+   let rec progress e = by_induction_on e progress -->
+<p>The <strong>preservation</strong> theorem (sometimes also called &quot;subject reduction&quot;)
+states that when a well-typed expression takes a step, the result is a
+well-typed expression of the same type. In order to show preservation we
+need to prove a couple of auxiliary results for reasoning about
+variables and substitution.</p>
+<p>The case for function application has to reason about &quot;beta reduction&quot;
+steps, i.e. substituting the formal argument of a function with an
+actual value. To see that this step preserves typing, we need to know
+that the substitution itself does. So we prove a <strong>substitution</strong> lemma,
+stating that substituting a (closed) term <tt class="docutils literal">v</tt> for a variable <tt class="docutils literal">x</tt> in
+an expression <tt class="docutils literal">e</tt> preserves the type of <tt class="docutils literal">e</tt>. The tricky cases in the
+substitution proof are the ones for variables and for function
+abstractions. In both cases, we discover that we need to take an
+expression <tt class="docutils literal">e</tt> that has been shown to be well-typed in some context
+<tt class="docutils literal">g</tt> and consider the same expression <tt class="docutils literal">e</tt> in a slightly different
+context <tt class="docutils literal">g'</tt>. For this we prove a <strong>context invariance</strong> lemma,
+showing that typing is preserved under &quot;inessential changes&quot; to the
+context <tt class="docutils literal">g</tt>—in particular, changes that do not affect any of the free
+variables of the expression. For this, we need a definition of the free
+variables of an expression—i.e., the variables occurring in the
+expression that are not bound by an abstraction.</p>
+<p>A variable <tt class="docutils literal">x</tt> appears free in <tt class="docutils literal">e</tt> if <tt class="docutils literal">e</tt> contains some occurrence
+of <tt class="docutils literal">x</tt> that is not under an abstraction labeled <tt class="docutils literal">x</tt>:</p>
+<pre class="code fstar literal-block">
+val appears_free_in : x:int -&gt; e:exp -&gt; Tot bool
+let rec appears_free_in x e =
+  match e with
+  | EVar y -&gt; x = y
+  | EApp e1 e2 -&gt; appears_free_in x e1 || appears_free_in x e2
+  | EAbs y _ e1 -&gt; x &lt;&gt; y &amp;&amp; appears_free_in x e1
+  | EIf e1 e2 e3 -&gt;
+      appears_free_in x e1 || appears_free_in x e2 || appears_free_in x e3
+  | ETrue
+  | EFalse -&gt; false
+</pre>
+<p>We also need a technical lemma connecting free variables and typing
+contexts. If a variable <tt class="docutils literal">x</tt> appears free in an expression <tt class="docutils literal">e</tt>, and
+if we know that <tt class="docutils literal">e</tt> is well typed in context <tt class="docutils literal">g</tt>, then it must be
+the case that <tt class="docutils literal">g</tt> assigns some type to <tt class="docutils literal">x</tt>.</p>
+<pre class="code fstar literal-block">
+val free_in_context : x:int -&gt; e:exp -&gt; g:env -&gt; Lemma
+      (requires (Some? (typing g e)))
+      (ensures (appears_free_in x e ==&gt; Some? (g x)))
+let rec free_in_context x e g =
+  match e with
+  | EVar _
+  | ETrue
+  | EFalse -&gt; ()
+  | EAbs y t e1 -&gt; free_in_context x e1 (extend g y t)
+  | EApp e1 e2 -&gt; free_in_context x e1 g; free_in_context x e2 g
+  | EIf e1 e2 e3 -&gt; free_in_context x e1 g;
+                    free_in_context x e2 g; free_in_context x e3 g
+</pre>
+<p>The proof is a straightforward induction. As a corollary for
+<tt class="docutils literal">g == empty</tt> we obtain that expressions typable in the empty
+environment have no free variables.</p>
+<pre class="code fstar literal-block">
+val typable_empty_closed : x:int -&gt; e:exp -&gt; Lemma
+      (requires (Some? (typing empty e)))
+      (ensures (not(appears_free_in x e)))
+      [SMTPat (appears_free_in x e)]
+let typable_empty_closed x e = free_in_context x e empty
+</pre>
+<p>The quantifier pattern <tt class="docutils literal">[SMTPat (appears_free_in x e)]</tt> signals to Z3
+that it should consider applying this lemma when its context contains a
+term of the form <tt class="docutils literal">appears_free_in</tt></p>
+<p>Sometimes, we know that <tt class="docutils literal">typing g e = Some t</tt>, and we will need to
+replace <tt class="docutils literal">g</tt> by an &quot;equivalent&quot; context <tt class="docutils literal">g'</tt>. We still need to define
+formally when two environments are equivalent. A natural definition is
+extensional equivalence of functions:</p>
+<pre class="code fstar literal-block">
+logic type equal (g1:env) (g2:env) = forall (x:int). g1 x = g2 x
+</pre>
+<p>According to this definition two environments are equivalent if have the
+same domain and they map all variables in the domain to the same type.
+We remark <tt class="docutils literal">equal</tt> in particular and logical formulas in general are
+<em>types</em> in F*, thus the different syntax for this definition.</p>
+<div class="admonition admonition-fixme">
+<p class="first admonition-title">FIXME (Cătălin)</p>
+<p class="last">What does opaque do exactly? What does logic do? Hints for the SMT
+solver / logical encoding only?</p>
+</div>
+<p>The context invariance lemma uses in fact a weaker variant of this
+equivalence in which the two environments only need to agree on the
+variables that appear free in an expression <tt class="docutils literal">e</tt>:</p>
+<pre class="code fstar literal-block">
+logic type equalE (e:exp) (g1:env) (g2:env) =
+  forall (x:int). appears_free_in x e ==&gt; g1 x = g2 x
+</pre>
+<p>The context invariance lemma is then easily proved by induction:</p>
+<pre class="code fstar literal-block">
+val context_invariance : e:exp -&gt; g:env -&gt; g':env -&gt; Lemma
+  (requires (equalE e g g'))
+  (ensures (typing g e == typing g' e))
+let rec context_invariance e g g' =
+  match e with
+  | EAbs x t e1 -&gt;
+     context_invariance e1 (extend g x t) (extend g' x t)
+
+  | EApp e1 e2 -&gt;
+     context_invariance e1 g g';
+     context_invariance e2 g g'
+
+  | EIf e1 e2 e3 -&gt;
+     context_invariance e1 g g';
+     context_invariance e2 g g';
+     context_invariance e3 g g'
+
+  | _ -&gt; ()
+</pre>
+<p>Because <tt class="docutils literal">equal</tt> is a stronger relation than <tt class="docutils literal">equalE</tt> we obtain the
+same property for <tt class="docutils literal">equal</tt>:</p>
+<pre class="code fstar literal-block">
+val typing_extensional : g:env -&gt; g':env -&gt; e:exp -&gt; Lemma
+  (requires (equal g g'))
+  (ensures (typing g e == typing g' e))
+let typing_extensional g g' e = context_invariance e g g'
+</pre>
+<p>We can use these results to show the following substitution lemma:</p>
+<pre class="code fstar literal-block">
+val substitution_preserves_typing : x:int -&gt; e:exp -&gt; v:exp -&gt; g:env -&gt; Lemma
+  (requires (Some? (typing empty v) /\
+             Some? (typing (extend g x (Some?.v (typing empty v))) e)))
+  (ensures (Some? (typing empty v) /\
+            typing g (subst x v e) ==
+            typing (extend g x (Some?.v (typing empty v))) e))
+let rec substitution_preserves_typing x e v g =
+  let Some t_x = typing empty v in
+  let gx = extend g x t_x in
+  match e with
+  | ETrue -&gt; ()
+  | EFalse -&gt; ()
+  | EVar y -&gt;
+     if x=y
+     then context_invariance v empty g (* uses lemma typable_empty_closed *)
+     else context_invariance e gx g
+
+  | EApp e1 e2 -&gt;
+     substitution_preserves_typing x e1 v g;
+     substitution_preserves_typing x e2 v g
+
+  | EIf e1 e2 e3 -&gt;
+     substitution_preserves_typing x e1 v g;
+     substitution_preserves_typing x e2 v g;
+     substitution_preserves_typing x e3 v g
+
+  | EAbs y t_y e1 -&gt;
+     let gxy = extend gx y t_y in
+     let gy = extend g y t_y in
+     if x=y
+     then typing_extensional gxy gy e1
+     else
+       (let gyx = extend gy x t_x in
+        typing_extensional gxy gyx e1;
+        substitution_preserves_typing x e1 v gy)
+</pre>
+<p>The proof proceeds by induction on the expression <tt class="docutils literal">e</tt>; we give the
+intuition of the two most interesting cases:</p>
+<ul>
+<li><p class="first">Case <tt class="docutils literal">e = EVar y</tt></p>
+</li>
+<li><p class="first">Case <tt class="docutils literal">x = y</tt>: We have <tt class="docutils literal">subst x v e = v</tt> and we already know that
+<tt class="docutils literal">typing empty v == Some t_x</tt>. However, what we need to show is
+<tt class="docutils literal">typing g v == Some t_x</tt> for some arbitrary environment <tt class="docutils literal">g</tt>. From
+the <tt class="docutils literal">typable_empty_closed</tt> lemma we obtain that <tt class="docutils literal">v</tt> contains no
+free variables, so we have <tt class="docutils literal">equalE v empty g</tt>. This allows us to
+apply the <tt class="docutils literal">context_invariance</tt> lemma to obtain that
+<tt class="docutils literal">typing empty v = typing g v</tt> and complete the proof of this case.</p>
+</li>
+<li><p class="first">Case <tt class="docutils literal">x &lt;&gt; y</tt> We have <tt class="docutils literal">subst x v e = e</tt> and
+<tt class="docutils literal">typing gx e = Some t_e</tt> and need to show that</p>
+<pre class="code literal-block">
+typing g e == Some t_e
+</pre>
+<p>We have that <tt class="docutils literal">EquivE (EVar y) gx g</tt> since <tt class="docutils literal">x &lt;&gt; y</tt> so we can
+apply the <tt class="docutils literal">context_invariance</tt> lemma to conclude.</p>
+</li>
+<li><p class="first">Case <tt class="docutils literal">e = EAbs y t_y e1</tt>: We have that
+<tt class="docutils literal">typing gxy e1 = Some t_e1</tt>, and need to show that
+<tt class="docutils literal">typing gy e1 == Some t_e1</tt></p>
+</li>
+<li><p class="first">Case <tt class="docutils literal">x = y</tt> We have <tt class="docutils literal">subst x v e = EAbs y t_y e1</tt>. Since
+<tt class="docutils literal">x = y</tt> the <tt class="docutils literal">x</tt> binder in <tt class="docutils literal">gxy</tt> is spurious (we have
+<tt class="docutils literal">equal gy gxy</tt>) and can apply the <tt class="docutils literal">typing_extensional</tt> lemma.</p>
+</li>
+<li><p class="first">Case <tt class="docutils literal">x &lt;&gt; y</tt> We have <tt class="docutils literal">subst x v e = EAbs y t_y (subst x v e1)</tt>.
+Since <tt class="docutils literal">x &lt;&gt; y</tt> (and since we are in a simply typed calculus, not a
+dependently typed one) we can swap the <tt class="docutils literal">x</tt> and <tt class="docutils literal">y</tt> binding to
+show that <tt class="docutils literal">equal gxy xyx</tt>. By the <tt class="docutils literal">typing_extensional</tt> lemma we
+obtain that <tt class="docutils literal">typing gxy e1 == typing gyx e1</tt>. By the induction
+hypothesis we thus obtain that</p>
+<pre class="code literal-block">
+typing gy (subst x v e1) == Some t_e1
+</pre>
+<p>and by the definition of <tt class="docutils literal">typing</tt> we conclude that
+<tt class="docutils literal">typing g (EAbs y t_y (subst x v e)) = t_e</tt>.</p>
+</li>
+</ul>
+<p>We now have the tools we need to prove preservation: if a closed
+expression <tt class="docutils literal">e</tt> has type <tt class="docutils literal">t</tt> and takes an evaluation step to <tt class="docutils literal">e'</tt>,
+then <tt class="docutils literal">e'</tt> is also a closed expression with type <tt class="docutils literal">t</tt>. In other words,
+the small-step evaluation relation preserves types.</p>
+<pre class="code fstar literal-block">
+val preservation : e:exp -&gt; Lemma
+  (requires (Some? (typing empty e) /\ Some? (step e) ))
+  (ensures (Some? (step e) /\
+            typing empty (Some?.v (step e)) == typing empty e))
+let rec preservation e =
+  match e with
+  | EApp e1 e2 -&gt;
+     if is_value e1
+     then (if is_value e2
+           then let EAbs x _ ebody = e1 in
+                substitution_preserves_typing x ebody e2 empty
+           else preservation e2)
+     else preservation e1
+
+  | EIf e1 _ _ -&gt;
+      if not (is_value e1) then preservation e1
+</pre>
+<p>We only have two cases to consider, since only applications and
+conditionals can take successful execution steps. The case for
+<tt class="docutils literal">e = EIf e1 e2 e3</tt> is simple: either <tt class="docutils literal">e1</tt> is a value and thus the
+conditional reduces to <tt class="docutils literal">e2</tt> or <tt class="docutils literal">e3</tt> which by the typing hypothesis
+also have type <tt class="docutils literal">t</tt>, or <tt class="docutils literal">e1</tt> takes a successful step and we can apply
+the induction hypothesis. We use the <tt class="docutils literal"><span class="pre">Some?.v</span></tt> projector, which
+requires F* to prove that indeed <tt class="docutils literal">e1</tt> can take a step; this is
+immediate since we know that the whole conditional takes a step and we
+know that <tt class="docutils literal">e1</tt> is not a value.</p>
+<p>The case for <tt class="docutils literal">e = EApp e1 e2</tt> is a bit more complex. If <tt class="docutils literal">e1</tt> steps
+or if <tt class="docutils literal">e1</tt> is a value and <tt class="docutils literal">e2</tt> steps then we just apply the
+induction hypothesis. If both <tt class="docutils literal">e1</tt> and <tt class="docutils literal">e2</tt> are values it needs to
+be the case that <tt class="docutils literal">e1</tt> is an abstraction <tt class="docutils literal">EAbs x targ ebody</tt> and
+<tt class="docutils literal">step e = subst x e2 ebody</tt>. From the typing assumption we have
+<tt class="docutils literal">typing (extend empty x tags) ebody = Some t</tt> and
+<tt class="docutils literal">typing empty e2 = Some targ</tt>, so we can use the substitution lemma to
+obtain that <tt class="docutils literal">typing empty (subst x e2 ebody) = Some t</tt>, which
+concludes the proof.</p>
+</div>
+<div class="section" id="exercises-for-stlc">
+<h1>Exercises for STLC</h1>
+<div class="exercise docutils container">
+<span class="exercise-header"><span class="exercise-label">Exercise</span><span class="exercise-title">Typed steps</span></span><div class="exercise-body docutils container">
+<p>Define a <tt class="docutils literal">typed_step</tt> step function that takes a well-typed expression
+<tt class="docutils literal">e</tt> that is not a value and produces the expression to which <tt class="docutils literal">e</tt>
+steps. Give <tt class="docutils literal">typed_step</tt> the following strong type (basically this
+type captures both progress and preservation):</p>
+<pre class="code fstar literal-block">
+val typed_step : e:exp{Some? (typing empty e) /\ not(is_value e)} -&gt;
+                 Tot (e':exp{typing empty e' = typing empty e})
+</pre>
+<p>(Hint: the most direct solution to this exercise fits on one line)</p>
+<div class="solution docutils container">
+<span class="solution-header"><span class="solution-label">Solution</span></span><div class="solution-body docutils container">
+<pre class="code fstar literal-block">
+let typed_step e = progress e; preservation e; Some?.v (step e)
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="exercise docutils container">
+<span class="exercise-header"><span class="exercise-label">Exercise</span><span class="exercise-title">Pairs</span></span><div class="exercise-body docutils container">
+<p>To add pairs to this formal development we add the following to the
+definition of types, expressions, values, substitution, and step:</p>
+<pre class="code fstar literal-block">
+type tyP =
+  (* {{{ 2 unchanged cases *)
+  | TBoolP  : tyP
+  | TArrowP : tin:tyP -&gt; tout:tyP -&gt; tyP
+  (* }}} *)
+  | TPairP : tyP -&gt; tyP -&gt; tyP
+
+type expP =
+  (* {{{ 6 unchanged cases *)
+  | EVarP   : v:var -&gt; expP
+  | EAppP   : fn:expP -&gt; arg:expP -&gt; expP
+  | EAbsP   : v:var -&gt; vty:tyP -&gt; body:expP -&gt; expP
+  | ETrueP  : expP
+  | EFalseP : expP
+  | EIfP    : test:expP -&gt; btrue:expP -&gt; bfalse:expP -&gt; expP
+  (* }}} *)
+  | EPairP  : expP -&gt; expP -&gt; expP
+  | EFstP   : expP -&gt; expP
+  | ESndP   : expP -&gt; expP
+
+let rec is_valueP e = (* Note the extra let rec! *)
+  match e with
+  (* {{{ 3 unchanged cases *)
+  | EAbsP _ _ _
+  | ETrueP
+  | EFalseP     -&gt; true
+  (* }}} *)
+  | EPairP e1 e2 -&gt; is_valueP e1 &amp;&amp; is_valueP e2
+  | _ -&gt; false
+
+let rec substP x e e' =
+  match e' with
+  (* {{{ 6 unchanged cases *)
+  | EVarP x' -&gt; if x = x' then e else e'
+  | EAbsP x' t e1 -&gt;
+      EAbsP x' t (if x = x' then e1 else (substP x e e1))
+  | EAppP e1 e2 -&gt; EAppP (substP x e e1) (substP x e e2)
+  | ETrueP -&gt; ETrueP
+  | EFalseP -&gt; EFalseP
+  | EIfP e1 e2 e3 -&gt; EIfP (substP x e e1) (substP x e e2) (substP x e e3)
+  (* }}} *)
+  | EPairP e1 e2 -&gt; EPairP (substP x e e1) (substP x e e2)
+  | EFstP e1 -&gt; EFstP (substP x e e1)
+  | ESndP e1 -&gt; ESndP (substP x e e1)
+
+let rec stepP e =
+  match e with
+  (* {{{ 2 unchanged cases *)
+  | EAppP e1 e2 -&gt;
+      if is_valueP e1 then
+        if is_valueP e2 then
+          match e1 with
+          | EAbsP x t e' -&gt; Some (substP x e2 e')
+          | _           -&gt; None
+        else
+          match (stepP e2) with
+          | Some e2' -&gt; Some (EAppP e1 e2')
+          | None     -&gt; None
+      else
+        (match (stepP e1) with
+        | Some e1' -&gt; Some (EAppP e1' e2)
+        | None     -&gt; None)
+  | EIfP e1 e2 e3 -&gt;
+      if is_valueP e1 then
+        match e1 with
+        | ETrueP   -&gt; Some e2
+        | EFalseP  -&gt; Some e3
+        | _       -&gt; None
+      else
+        (match (stepP e1) with
+        | Some e1' -&gt; Some (EIfP e1' e2 e3)
+        | None     -&gt; None)
+  (* }}} *)
+  | EPairP e1 e2 -&gt;
+      if is_valueP e1 then
+        if is_valueP e2 then None
+        else
+          (match (stepP e2) with
+          | Some e2' -&gt; Some (EPairP e1 e2')
+          | None     -&gt; None)
+      else
+        (match (stepP e1) with
+        | Some e1' -&gt; Some (EPairP e1' e2)
+        | None     -&gt; None)
+  | EFstP e1 -&gt;
+      if is_valueP e1 then
+        (match e1 with
+        | EPairP v1 v2 -&gt; Some v1
+        | _           -&gt; None)
+      else
+        (match (stepP e1) with
+        | Some e1' -&gt; Some (EFstP e1')
+        | None     -&gt; None)
+  | ESndP e1 -&gt;
+      if is_valueP e1 then
+        (match e1 with
+        | EPairP v1 v2 -&gt; Some v2
+        | _           -&gt; None)
+      else
+        (match (stepP e1) with
+        | Some e1' -&gt; Some (ESndP e1')
+        | None     -&gt; None)
+  | _ -&gt; None
+</pre>
+<p>Add cases to <tt class="docutils literal">typingP</tt> for the new constructs and fix all the proofs.</p>
+<div class="solution docutils container">
+<span class="solution-header"><span class="solution-label">Solution</span></span><div class="solution-body docutils container">
+<p>We extend the <tt class="docutils literal">typingP</tt> and <tt class="docutils literal">appears_free_inP</tt> functions with cases
+for <tt class="docutils literal">EPairP</tt>, <tt class="docutils literal">EFstP</tt>, and <tt class="docutils literal">ESndP</tt>:</p>
+<pre class="code fstar literal-block">
+type envP = int -&gt; Tot (option tyP)
+
+val emptyP : envP
+let emptyP = fun _ -&gt; None
+</pre>
+<p>When we move under a binder we extend the typing environment.</p>
+<pre class="code fstar literal-block">
+val extendP : envP -&gt; int -&gt; tyP -&gt; Tot envP
+let extendP g x t = fun x' -&gt; if x = x' then Some t else g x'
+
+val typingP : envP -&gt; expP -&gt; Tot (option tyP)
+let rec typingP g e =
+  match e with
+  (* {{{ 6 unchanged cases *)
+  | EVarP x -&gt; g x
+  | EAbsP x t e1 -&gt;
+      (match typingP (extendP g x t) e1 with
+      | Some t' -&gt; Some (TArrowP t t')
+      | None    -&gt; None)
+  | EAppP e1 e2 -&gt;
+      (match typingP g e1, typingP g e2 with
+      | Some (TArrowP t11 t12), Some t2 -&gt; if t11 = t2 then Some t12 else None
+      | _                    , _       -&gt; None)
+  | ETrueP  -&gt; Some TBoolP
+  | EFalseP -&gt; Some TBoolP
+  | EIfP e1 e2 e3 -&gt;
+      (match typingP g e1, typingP g e2, typingP g e3 with
+      | Some TBoolP, Some t2, Some t3 -&gt; if t2 = t3 then Some t2 else None
+      | _         , _      , _       -&gt; None)
+
+  (* }}} *)
+  | EPairP e1 e2 -&gt;
+      (match typingP g e1, typingP g e2 with
+      | Some t1, Some t2 -&gt; Some (TPairP t1 t2)
+      | _      , _       -&gt; None)
+  | EFstP e1 -&gt;
+      (match typingP g e1 with
+      | Some (TPairP t1 t2) -&gt; Some t1
+      | _                  -&gt; None)
+  | ESndP e1 -&gt;
+      (match typingP g e1 with
+      | Some (TPairP t1 t2) -&gt; Some t2
+      | _                  -&gt; None)
+
+val appears_free_inP : x:int -&gt; e:expP -&gt; Tot bool
+let rec appears_free_inP x e =
+  match e with
+  (* {{{ 6 unchanged cases *)
+  | EVarP y -&gt; x = y
+  | EAppP e1 e2 -&gt; appears_free_inP x e1 || appears_free_inP x e2
+  | EAbsP y _ e1 -&gt; x &lt;&gt; y &amp;&amp; appears_free_inP x e1
+  | EIfP e1 e2 e3 -&gt;
+      appears_free_inP x e1 || appears_free_inP x e2 || appears_free_inP x e3
+  | ETrueP
+  | EFalseP -&gt; false
+  (* }}} *)
+  | EPairP e1 e2 -&gt; appears_free_inP x e1 || appears_free_inP x e2
+  | EFstP e1 -&gt; appears_free_inP x e1
+  | ESndP e1 -&gt; appears_free_inP x e1
+</pre>
+<p>The proofs of the lemmas are also easy to extend by just calling the
+induction hypothesis:</p>
+<pre class="code fstar literal-block">
+val free_in_contextP : x:int -&gt; e:expP -&gt; g:envP -&gt; Lemma
+      (requires (Some? (typingP g e)))
+      (ensures (appears_free_inP x e ==&gt; Some? (g x)))
+let rec free_in_contextP x e g =
+  match e with
+  (* {{{ 6 unchanged cases *)
+  | EVarP _
+  | ETrueP
+  | EFalseP -&gt; ()
+  | EAbsP y t e1 -&gt; free_in_contextP x e1 (extendP g y t)
+  | EAppP e1 e2 -&gt; free_in_contextP x e1 g; free_in_contextP x e2 g
+  | EIfP e1 e2 e3 -&gt; free_in_contextP x e1 g;
+                    free_in_contextP x e2 g; free_in_contextP x e3 g
+  (* }}} *)
+  | EPairP e1 e2 -&gt; free_in_contextP x e1 g; free_in_contextP x e2 g
+  | EFstP e1
+  | ESndP e1 -&gt; free_in_contextP x e1 g
+
+logic type equalEP (e:expP) (g1:envP) (g2:envP) =
+  forall (x:int). appears_free_inP x e ==&gt; g1 x = g2 x
+
+val context_invarianceP : e:expP -&gt; g:envP -&gt; g':envP -&gt; Lemma
+  (requires (equalEP e g g'))
+  (ensures (typingP g e == typingP g' e))
+let rec context_invarianceP e g g' =
+  match e with
+  (* {{{ 3 unchanged cases *)
+  | EAbsP x t e1 -&gt;
+     context_invarianceP e1 (extendP g x t) (extendP g' x t)
+
+  | EAppP e1 e2 -&gt;
+     context_invarianceP e1 g g';
+     context_invarianceP e2 g g'
+
+  | EIfP e1 e2 e3 -&gt;
+     context_invarianceP e1 g g';
+     context_invarianceP e2 g g';
+     context_invarianceP e3 g g'
+  (* }}} *)
+
+  | EPairP e1 e2 -&gt;
+     context_invarianceP e1 g g';
+     context_invarianceP e2 g g'
+
+  | EFstP e1
+  | ESndP e1 -&gt; context_invarianceP e1 g g'
+
+  | _ -&gt; ()
+
+(* {{{ similar definitions skipped *)
+logic type equalP (g1:envP) (g2:envP) = forall (x:int). g1 x = g2 x
+
+val typing_extensionalP : g:envP -&gt; g':envP -&gt; e:expP -&gt; Lemma
+  (requires (equalP g g'))
+  (ensures (typingP g e == typingP g' e))
+let typing_extensionalP g g' e = context_invarianceP e g g'
+
+val typable_empty_closedP : x:int -&gt; e:expP -&gt; Lemma
+      (requires (Some? (typingP emptyP e)))
+      (ensures (not(appears_free_inP x e)))
+      [SMTPat (appears_free_inP x e)]
+let typable_empty_closedP x e = free_in_contextP x e emptyP
+(* }}} *)
+
+val substitution_preserves_typingP : x:int -&gt; e:expP -&gt; v:expP -&gt; g:envP -&gt; Lemma
+  (requires (Some? (typingP emptyP v) /\
+             Some? (typingP (extendP g x (Some?.v (typingP emptyP v))) e)))
+  (ensures (Some? (typingP emptyP v) /\
+            typingP g (substP x v e) ==
+            typingP (extendP g x (Some?.v (typingP emptyP v))) e))
+let rec substitution_preserves_typingP x e v g =
+  (* {{{ unchanged preamble skipped *)
+  let Some t_x = typingP emptyP v in
+  let gx = extendP g x t_x in
+  match e with
+  | ETrueP -&gt; ()
+  | EFalseP -&gt; ()
+  | EVarP y -&gt;
+     if x=y
+     then context_invarianceP v emptyP g (* uses lemma typable_empty_closed *)
+     else context_invarianceP e gx g
+
+  | EAppP e1 e2 -&gt;
+     substitution_preserves_typingP x e1 v g;
+     substitution_preserves_typingP x e2 v g
+
+  | EIfP e1 e2 e3 -&gt;
+     substitution_preserves_typingP x e1 v g;
+     substitution_preserves_typingP x e2 v g;
+     substitution_preserves_typingP x e3 v g
+
+  | EAbsP y t_y e1 -&gt;
+     let gxy = extendP gx y t_y in
+     let gy = extendP g y t_y in
+     if x=y
+     then typing_extensionalP gxy gy e1
+     else
+       (let gyx = extendP gy x t_x in
+        typing_extensionalP gxy gyx e1;
+        substitution_preserves_typingP x e1 v gy)
+  (* }}} *)
+
+  | EPairP e1 e2 -&gt;
+     (substitution_preserves_typingP x e1 v g;
+      substitution_preserves_typingP x e2 v g)
+
+  | EFstP e1
+  | ESndP e1 -&gt;
+      substitution_preserves_typingP x e1 v g
+
+  | _ -&gt; ()
+</pre>
+<p>As for the other cases, the preservation proof when <tt class="docutils literal">e = EPair e1 e2</tt>
+follows the structure of the <tt class="docutils literal">step</tt> function. If <tt class="docutils literal">e1</tt> is not a value
+then it further evaluates, so we apply the induction hypothesis to
+<tt class="docutils literal">e1</tt>. If <tt class="docutils literal">e1</tt> is a value, then since we know that the pair
+evaluates, it must be the case that <tt class="docutils literal">e2</tt> is not a value and further
+evaluates, so we apply the induction hypothesis to it. The cases for
+<tt class="docutils literal">EFst</tt> and <tt class="docutils literal">ESnd</tt> are similar.</p>
+<pre class="code fstar literal-block">
+val preservationP : e:expP{Some? (typingP emptyP e) /\ Some? (stepP e)} -&gt;
+      Tot (u:unit{typingP emptyP (Some?.v (stepP e)) == typingP emptyP e})
+let rec preservationP e =
+  match e with
+  (* {{{ two unchanged cases *)
+  | EAppP e1 e2 -&gt;
+     if is_valueP e1
+     then (if is_valueP e2
+           then let EAbsP x _ ebody = e1 in
+                substitution_preserves_typingP x ebody e2 emptyP
+           else preservationP e2)
+     else preservationP e1
+
+  | EIfP e1 _ _ -&gt;
+      if not (is_valueP e1) then preservationP e1
+  (* }}} *)
+
+  | EPairP e1 e2 -&gt;
+      (match is_valueP e1, is_valueP e2 with
+      | false, _     -&gt; preservationP e1
+      | true , false -&gt; preservationP e2)
+
+  | EFstP e1
+  | ESndP e1 -&gt;
+      if not (is_valueP e1) then preservationP e1
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="exercise docutils container">
+<span class="exercise-header"><span class="exercise-label">Exercise</span><span class="exercise-title">Let bindings</span></span><div class="exercise-body docutils container">
+<p>We want to add a let construct to this formal development. We add the
+following to the definition of expressions:</p>
+<pre class="code literal-block">
+type exp =
+  ...
+  | ELet  : int -&gt; exp -&gt; exp -&gt; exp
+</pre>
+<p>Add cases for <tt class="docutils literal">ELet</tt> to all definitions and proofs.</p>
+<div class="admonition admonition-fixme">
+<p class="first admonition-title">FIXME (Cătălin)</p>
+<p class="last">Make the prev kind of link a macro of some sorts. It doesn't have a
+proper body so it's not an environment, but what is it? Entity?</p>
+</div>
+</div>
+</div>
+<div class="exercise docutils container">
+<span class="exercise-header"><span class="exercise-label">Exercise</span><span class="exercise-title">Big-step interpretation</span></span><div class="exercise-body docutils container">
+<p>Define a big-step interpreter for STLC as a recursive function <tt class="docutils literal">eval</tt>
+that given a well-typed expression <tt class="docutils literal">e</tt> either produces the well-typed
+value <tt class="docutils literal">v</tt> to which <tt class="docutils literal">e</tt> evaluates or it diverges if the evaluation of
+<tt class="docutils literal">e</tt> loops. Give <tt class="docutils literal">eval</tt> the following strong type ensuring that <tt class="docutils literal">v</tt>
+has the same type as <tt class="docutils literal">e</tt> (basically this type captures both progress
+and preservation):</p>
+<pre class="code fstar literal-block">
+val eval : e:exp{Some? (typing empty e)} -&gt;
+           Dv (v:exp{is_value v &amp;&amp; typing empty v = typing empty e})
+</pre>
+<p>The <tt class="docutils literal">Dv</tt> effect is that of potentially divergent computations. We
+cannot mark this as <tt class="docutils literal">Tot</tt> since <em>a priori</em> STLC computations could
+loop, and it is hard to prove that well-typed ones don't.</p>
+<div class="solution docutils container">
+<span class="solution-header"><span class="solution-label">Solution</span></span><div class="solution-body docutils container">
+<p>Here is a solution that only uses <tt class="docutils literal">typed_step</tt> (suggested by Santiago
+Zanella):</p>
+<pre class="code fstar literal-block">
+let rec eval e =
+  if is_value e then e
+  else eval (typed_step e)
+</pre>
+<p>or using the <tt class="docutils literal">progress</tt> and <tt class="docutils literal">preservation</tt> lemmas instead of
+<tt class="docutils literal">typed_step</tt> (suggested by Guido Martinez):</p>
+<pre class="code fstar literal-block">
+val eval' : e:exp{Some? (typing empty e)} -&gt;
+  Dv (v:exp{is_value v &amp;&amp; typing empty v = typing empty e})
+let rec eval' e = match step e with
+  | None -&gt; progress e; e
+  | Some e' -&gt; preservation e; eval' e'
+</pre>
+<p>Here is another solution that only uses the substitution lemma:</p>
+<pre class="code fstar literal-block">
+val eval'' : e:exp{Some? (typing empty e)} -&gt;
+            Dv (v:exp{is_value v &amp;&amp; typing empty v = typing empty e})
+let rec eval'' e =
+  let Some t = typing empty e in
+  match e with
+  | EApp e1 e2 -&gt;
+     (let EAbs x _ e' = eval' e1 in
+      let v = eval' e2 in
+      substitution_preserves_typing x e' v empty;
+      eval'' (subst x v e'))
+  | EAbs _ _ _
+  | ETrue
+  | EFalse     -&gt; e
+  | EIf e1 e2 e3 -&gt;
+     (match eval'' e1 with
+      | ETrue  -&gt; eval'' e2
+      | EFalse -&gt; eval'' e3)
+</pre>
+</div>
+</div>
+</div>
+</div>
+<!-- ::  Relating small step and big step is hard and boring
+
+.. fst::
+
+   val steps_n : nat -> exp -> Tot (option exp)
+   let rec steps_n n e =
+     match n with
+     | 0 -> Some e
+     | _ -> (match step e with
+             | Some e' -> steps_n (n-1) e'
+             | _       -> None)
+
+   logic type steps (e:exp) (e':exp) =
+     (exists (n:nat). steps_n n e == Some e')
+
+   assume val step_last : e:exp -> e':exp -> e'':exp -> Lemma
+                (requires (steps e e' /\ step e' = Some e''))
+                (ensures (steps e e''))
+
+   assume val eval''' : e:exp{Some? (typing empty e)} ->
+              Dv (v:exp{is_value v && typing empty v = typing empty e
+                        /\ steps e v}) -->
+<!-- ::
+
+*Exercise: Extend the type-checker so that it produces error messages in
+case of ill-typed terms, instead of just ``None``* (CH: boring
+programming exercise? nothing to do with proving/verifying)
+
+*Exercise: Change the step and typing functions to use primitive
+exceptions instead of options* (CH: Not sure this is solvable with the
+current |fstar|, but it seems quite interesting) -->
+</div>
+</div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/addon/runmode/runmode.min.js" integrity="sha256-Y2iV9vZZs9GsyRIV5HgmKgmfGIsXHpdcknYcbIFkz4M=" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.js" integrity="sha256-XDU6Po3hKjdQXJHRrKrWlIF/E6y6BBgV5eiqZSYePpo=" crossorigin="anonymous"></script>
+
+    <script src="./fstar.js/fstar.cm.js"></script>
+    <script src="./fstar.js/fstar.client.js"></script>
+
+    <script>
+      FStar.IDE.LiterateClient.run("stlc.fst");
+
+      if (document && document.fonts && document.fonts.ready) {
+          // Normally added by fslit.js
+          document.fonts.ready.then(function () {
+              var editors = document.getElementsByClassName("CodeMirror");
+              for (var idx = 0; idx < editors.length; idx++) {
+                  var editor = editors[idx].CodeMirror;
+                  editor && editor.refresh();
+              }
+          });
+      }
+    </script>
+</body>
+</html>
