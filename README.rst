@@ -40,16 +40,75 @@ The recommended way to integrate ``F*.js`` in your documents is to use `fslit <h
 
 Other options are listed below:
 
-- ``web/fstar.cli.html`` demonstrates how to setup ``F*.js`` for single-file verification.  Concretely, the code looks like this::
+- ``web/fstar.cli.html`` demonstrates how to setup ``F*.js`` for single-file verification.
 
-     var $editor = $(".standalone-editor");
-     var client = new FStar.CLI.Client($editor, "file-name.fst", $editor.text());
+  1. Add the following style sheets in your page's ``<head>``:
 
-- ``web/fstar.ide.literate.client.html`` demonstrates how to turn a literate-F\* document into an interactive F\* notebook.  Concretely, all that's needed is this::
+     .. code:: html
 
-     FStar.IDE.LiterateClient.run("file-name.fst");
+        <link rel="stylesheet" href="./fstar.js/cm.tango.css" />
+        <link rel="stylesheet" href="./fstar.js/fstar.cli.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.css" />
 
-  This will turn all DOM elements with class ``fstar`` into interactive snippets.
+  2. Add the following scripts to the end of page's your ``<body>``:
+
+     .. code:: html
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+        <script src="./fstar.js/fstar.cm.js"></script>
+        <script src="./fstar.js/fstar.client.js"></script>
+
+  3. Set up the CLI integration:
+
+     .. code:: html
+
+        <script>
+          // Tell F*.js where to look for web worker scripts
+          FStar.CLI.WORKER_DIRECTORY = "./fstar.js/";
+          // Set up the CLI backend
+          var $editor = $(".standalone-editor");
+          var client = new FStar.CLI.Client($editor, "file-name.fst", $editor.text());
+        </script>
+
+- ``web/fstar.ide.literate.stlc.html`` demonstrates how to turn a literate-F\* document into an interactive F\* notebook.  Most of this can be done for you by ``fslit``.
+
+  1. Add the following style sheets in your page's ``<head>``:
+
+     .. code:: html
+
+        <link rel="stylesheet" href="./fslit.css" />
+        <link rel="stylesheet" href="./fstar.js/cm.tango.css" />
+        <link rel="stylesheet" href="./fstar.js/fstar.ide.css" />
+        <link rel="stylesheet" href="./fstar.js/fstar.cli.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.css" />
+
+  2. Add the following scripts to the end of page's your ``<body>``:
+
+     .. code:: html
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.36.0/addon/runmode/runmode.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.js"></script>
+        <script src="./fslit.js"></script>
+        <script src="./fstar.js/fstar.cm.js"></script>
+        <script src="./fstar.js/fstar.client.js"></script>
+
+  3. Set up the CLI integration:
+
+     .. code:: html
+
+         <script>
+           // Tell F*.js where to look for web worker scripts
+           FStar.CLI.WORKER_DIRECTORY = "./fstar.js/";
+           FStar.IDE.WORKER_DIRECTORY = "./fstar.js/";
+           // Set up the IDE backend (this turns all DOM elements with class ``fstar``
+           // into interactive snippets).
+           FStar.IDE.LiterateClient.run("file-name.fst");
+         </script>
 
 Notes
 =====
