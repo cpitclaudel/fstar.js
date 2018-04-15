@@ -7,6 +7,6 @@ attic.*
 /dist/
 /scratch/
 /src/ocaml/tmp/
-/vendor/z3.js/
+/vendor/z3.wasm/
 /web/fstar.js
 

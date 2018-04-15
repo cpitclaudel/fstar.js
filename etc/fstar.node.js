@@ -33,7 +33,7 @@ global.JSOO_FStar = function(obj) {
 };
 
 global.underscore = require("../vendor/underscore-min.js");
-global.Z3 = require("../vendor/z3.js/z3smt2w.js");
+global.Z3 = require("../vendor/z3.wasm/z3smt2w.js");
 require("../lib/fstar.global-object.js");
 require("../lib/fstar.worker.utils.js");
 FStar.WorkerUtils.DEBUG = false;

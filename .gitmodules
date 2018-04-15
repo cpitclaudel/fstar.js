@@ -1,3 +1,8 @@
 [submodule "src/ocaml/fstar"]
 	path = src/ocaml/fstar
 	url = git@github.com:FStarLang/FStar.git
+
+[submodule "vendor/js_of_ocaml"]
+	path = vendor/js_of_ocaml
+	url = git@github.com:cpitclaudel/js_of_ocaml.git
+	branch = fstar

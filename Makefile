@@ -8,7 +8,7 @@ STDLIB=$(FSTAR_ROOT)/ulib
 ULIB_ML32_SUBDIR=tmp/ulib-ml32
 ULIB_ML32_ROOT=$(OCAML_ROOT)/$(ULIB_ML32_SUBDIR)
 
-JS_OF_OCAML=ulimit -s unlimited; /build/js_of_ocaml/_build/default/compiler/js_of_ocaml.exe
+JS_OF_OCAML=ulimit -s unlimited; vendor/js_of_ocaml/_build/default/compiler/js_of_ocaml.exe
 
 # ocamlbuild reverses dependencies, so list fstar/ulib/ml/32bit last to give it
 # priority over fstar/ulib/ml (it contains 32bit-friendly implementations)
@@ -106,7 +106,7 @@ $(LIB_BUILD_DIR)/fstar.%.js: $(wildcard lib/*.ts)
 TSC_OUTPUTS=$(addprefix $(LIB_BUILD_DIR)/,fstar.client.js fstar.ide.worker.js fstar.cli.worker.js)
 
 dist: gen-index gen-depcache $(TSC_OUTPUTS) | dist-dirs
-	cp vendor/z3.js/z3smt2w.js vendor/z3.js/z3smt2w.wasm lib/*.js lib/*.css dist/
+	cp vendor/z3.wasm/z3smt2w.js vendor/z3.wasm/z3smt2w.wasm lib/*.js lib/*.css dist/
 	cp $(TSC_OUTPUTS) $(JSOO_BUILD_DIR)/fstar.core.js dist/
 	@cp $(STDLIB_FILES_ALL) dist/fs/ulib/
 
