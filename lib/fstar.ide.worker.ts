@@ -45,9 +45,9 @@ namespace FStar.IDE.Worker {
             this.ready = false;
             Utils.assertDedicatedWorker().onmessage = (message: MessageEvent) => this.onMessage(message);
 
-            messages.progress("Downloading and initializing F*…");
+            messages.progress("Downloading and initializing F* (~4MB)…");
             Utils.loadBinaries();
-            messages.progress("Downloading Z3…");
+            messages.progress("Downloading Z3 (~5MB)…");
             FStar.Driver.initSMT({ progress: messages.progress,
                                    ready: () => this.smtInitialized() });
             // We need a queue because the engine's initialization is asynchronous,

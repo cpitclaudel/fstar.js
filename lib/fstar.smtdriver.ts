@@ -41,7 +41,7 @@ namespace FStar.SMTDriver {
             url, 'arraybuffer', (evt: ProgressEvent) => {
                 if (evt.lengthComputable) {
                     const percentLoaded: number = evt.loaded / evt.total * 100;
-                    onProgress(`Downloading Z3 (${percentLoaded.toFixed(2)}%)…`);
+                    onProgress(`Downloading Z3 (~5MB, ${percentLoaded.toFixed(2)}%)…`);
                 }
             },
             onLoad);
@@ -52,7 +52,7 @@ namespace FStar.SMTDriver {
                                   onProgress: (msg: string) => void,
                                   onLoad: (mod: WebAssembly.Module) => void) {
         fetchWasmBinaryAsync(url, onProgress, wasmBinary => {
-            onProgress("Compiling Z3…");
+            onProgress("Compiling Z3 (may take up to 30s)…");
             const start = Date.now();
             const wmod = new WebAssembly.Module(wasmBinary);
             const elapsed = (Date.now() - start) / 1000;

@@ -45,9 +45,9 @@ namespace FStar.CLI.Worker {
             Utils.assertDedicatedWorker().onmessage =
                 (ev: MessageEvent) => this.onMessage(ev);
 
-            messages.progress("Downloading and initializing F*…");
+            messages.progress("Downloading and initializing F* (~4MB)…");
             Utils.loadBinaries();
-            messages.progress("Downloading Z3…");
+            messages.progress("Downloading Z3 (~5MB)…");
             FStar.Driver.initSMT({ progress: messages.progress,
                                    ready: () => this.smtInitialized() });
         }
