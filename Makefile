@@ -110,6 +110,7 @@ TSC_OUTPUTS=$(addprefix $(LIB_BUILD_DIR)/,fstar.client.js fstar.ide.worker.js fs
 dist: gen-index gen-depcache $(TSC_OUTPUTS) | dist-dirs
 	cp vendor/z3.wasm/z3smt2w.js vendor/z3.wasm/z3smt2w.wasm lib/*.js lib/*.css dist/
 	cp $(TSC_OUTPUTS) $(JSOO_BUILD_DIR)/fstar.core.js dist/
+	cp README.dist.rst dist/
 
 serve: dist
 	test -L web/fstar.js || ln -s ../dist web/fstar.js
