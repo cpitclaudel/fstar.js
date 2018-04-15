@@ -101,7 +101,7 @@ gen-depcache: $(OCAML_BUILD_DIR)/depcache.native $(STDLIB_FILES_SOURCES_TO_CHECK
 	@build/ocaml/depcache.native $(FSTAR_ROOT) /fstar/ulib/ $(STDLIB_FILES_SOURCES_TO_CHECK:$(STDLIB)/%=%) > dist/fs/depcache
 
 $(LIB_BUILD_DIR)/fstar.%.js: $(wildcard lib/*.ts)
-	tsc --project "lib/tsconfig.$*.json"
+	lib/node_modules/.bin/tsc --project "lib/tsconfig.$*.json"
 
 TSC_OUTPUTS=$(addprefix $(LIB_BUILD_DIR)/,fstar.client.js fstar.ide.worker.js fstar.cli.worker.js)
 
