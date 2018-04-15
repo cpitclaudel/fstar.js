@@ -364,6 +364,7 @@ limitations under the License. */
   background: #2e3436;
   border-radius: 0.25rem;
   color: #eeeeec;
+  display: none;
   font-size: 0.75rem;
   line-height: 1rem;
   padding: 0.35rem 0.45rem;
