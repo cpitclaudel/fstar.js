@@ -94,6 +94,8 @@ dist-dirs:
 gen-index: $(STDLIB_FILES_SOURCES) | dist-dirs
 	@echo $(MAKE) --quiet -C $(FSTAR_ROOT)/ulib -f Makefile.verify '[...]'
 	@+$(MAKE) --quiet -C $(FSTAR_ROOT)/ulib -f Makefile.verify $(STDLIB_FILES_CHECKED:$(STDLIB)/%=%)
+	@echo cp STDLIB_FILES_ALL dist/fs/ulib/
+	@cp $(STDLIB_FILES_ALL) dist/fs/ulib/
 	etc/jsoo_lazy_fs_index.py dist/fs/ > dist/fs/index.json
 
 gen-depcache: $(OCAML_BUILD_DIR)/depcache.native $(STDLIB_FILES_SOURCES_TO_CHECK) | dist-dirs
@@ -108,7 +110,6 @@ TSC_OUTPUTS=$(addprefix $(LIB_BUILD_DIR)/,fstar.client.js fstar.ide.worker.js fs
 dist: gen-index gen-depcache $(TSC_OUTPUTS) | dist-dirs
 	cp vendor/z3.wasm/z3smt2w.js vendor/z3.wasm/z3smt2w.wasm lib/*.js lib/*.css dist/
 	cp $(TSC_OUTPUTS) $(JSOO_BUILD_DIR)/fstar.core.js dist/
-	@cp $(STDLIB_FILES_ALL) dist/fs/ulib/
 
 serve: dist
 	test -L web/fstar.js || ln -s ../dist web/fstar.js
@@ -126,5 +127,5 @@ clean-ocaml:
 
 clean:
 	rm -rf build dist
-	unlink web/fstar.js
+	unlink web/fstar.js || true
 	+$(MAKE) -C $(FSTAR_ROOT) clean
