@@ -10,7 +10,7 @@ This repo contains a scripts, wrappers, and libraries to run `F* <https://github
 
 Loading Z3 and F* and downloading F* libraries is fairly slow (~15 seconds on Chrome, though less than 1 second on Firefox), but verification performance is fairly good (typically within a factor 2-5 of native on Chrome, and 3-10 of native on Firefox).
 
-Pre-build archives are available at https://github.com/cpitclaudel/fstar.js/releases.
+Pre-built archives are available at https://github.com/cpitclaudel/fstar.js/releases.
 
 Building
 ========
