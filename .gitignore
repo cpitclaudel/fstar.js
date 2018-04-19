@@ -10,3 +10,4 @@ attic.*
 /vendor/z3.wasm/
 /web/fstar.js
 
+/fstar.js.tar.gz
