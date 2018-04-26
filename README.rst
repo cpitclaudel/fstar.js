@@ -23,7 +23,7 @@ Building
 
     opam switch 4.04.0
     eval `opam config env`
-    opam install batteries compiler-libs compiler-libs.common dynlink js_of_ocaml js_of_ocaml.ppx menhirLib pprint stdint ulex yojson zarith
+    opam install batteries menhir pprint stdint ulex yojson zarith js_of_ocaml
     (cd lib; npm install)
 
 - Compile ``js_of_ocaml``::
