@@ -56,6 +56,9 @@ let repl_eval_str query =
 
 exception Exit of int
 
+module Js = Js_of_ocaml.Js
+module Sys_js = Js_of_ocaml.Sys_js
+
 external ml_string_of_uint8Array : Js_of_ocaml.Typed_array.uint8Array Js.t -> string = "caml_string_of_array"
 
 let main () =
@@ -110,7 +113,7 @@ let _ =
          Js.wrap_callback (fun js_bytestr ->
              let bs = ml_string_of_uint8Array js_bytestr in
              FStar_Parser_Dep.set_collect_one_cache
-               (FStar_Util.smap_of_list (Marshal.from_bytes bs 0)))
+               (FStar_Util.smap_of_list (Marshal.from_bytes (Bytes.of_string bs) 0)))
 
        val callMain =
          Js.wrap_callback (fun () ->
