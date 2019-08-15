@@ -23,11 +23,12 @@ Building
 
     opam switch 4.04.0
     eval `opam config env`
-    opam install batteries menhir pprint stdint ulex yojson zarith js_of_ocaml
+    opam install batteries menhir pprint stdint ulex yojson zarith js_of_ocaml js_of_ocaml-ppx
     (cd lib; npm install)
 
 - Compile ``js_of_ocaml``::
 
+    # Install dependencies listed in vendor/js_of_ocaml/manual/contribute.wiki
     make -C vendor/js_of_ocaml
 
 - Fetch a release of ``z3.wasm`` from https://github.com/cpitclaudel/z3.wasm/releases/ and extract it to ``vendor/z3.wasm``.
